@@ -1,21 +1,23 @@
 import Gamebar from "@/components/gamebar";
 import HeroTitle from "@/components/hero-title";
 import Sidebar from "@/components/sidebar";
-import { decrypt } from "@/lib/session";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
 
 export default async function Home() {
-	const session = (await cookies()).get("session")?.value;
-	const payload = await decrypt(session);
-//   console.log(payload)
+	const session = await getSession();
+	console.log(session)
+
+	if (!session) {
+		return <>No session</>;
+	}
 
 	return (
 		<div className="min-h-screen">
-			<Sidebar />
+			<Sidebar session={session} />
 			<div className="max-w-6xl mx-auto">
 				<div className="h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
 					<HeroTitle />
-					<Gamebar />
+					<Gamebar session={session} />
 				</div>
 			</div>
 			{/* <div className="bg-foreground min-h-[400px] text-background">

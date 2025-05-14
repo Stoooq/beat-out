@@ -1,17 +1,21 @@
 "use client";
 
+import { SessionPayload } from "@/lib/session";
+import { SquarePen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-export default function Sidebar() {
+export default function Sidebar({ session }: { session: SessionPayload }) {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
 		<motion.div
-			initial={{ y: -100 }}
+			initial={{ y: "-100%" }}
 			animate={{ y: 0 }}
 			transition={{ delay: 2 }}
-			className={`fixed left-0 right-0 w-6xl mx-auto p-4 font-(family-name:--font-climate-crisis) z-50 ${!isOpen && 'backdrop-blur-md'}`}
+			className={`fixed left-0 right-0 w-6xl mx-auto p-4 font-(family-name:--font-climate-crisis) z-50 ${
+				!isOpen && "backdrop-blur-md"
+			}`}
 		>
 			<AnimatePresence>
 				{isOpen && (
@@ -38,16 +42,24 @@ export default function Sidebar() {
 
 			<AnimatePresence mode="popLayout">
 				{!isOpen && (
-					<motion.button
+					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ delay: 0.2 }}
-						onClick={() => setIsOpen((prev) => !prev)}
-						className="cursor-pointer p-4 relative z-60 text-[2rem] md:text-[3rem]"
+						className="flex justify-between items-center"
 					>
-						Menu
-					</motion.button>
+						<motion.button
+							onClick={() => setIsOpen((prev) => !prev)}
+							className="cursor-pointer p-4 relative z-60 text-[2rem] md:text-[3rem]"
+						>
+							Menu
+						</motion.button>
+						<div className="flex gap-4">
+							{session.userName}
+							<SquarePen />
+						</div>
+					</motion.div>
 				)}
 			</AnimatePresence>
 			<AnimatePresence mode="popLayout">

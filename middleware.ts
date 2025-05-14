@@ -26,4 +26,4 @@ export async function middleware(request: NextRequest) {
 	return response;
 }
 
-export const config = { matcher: "/" };
+export const config = { matcher: ["/", "/api/((?!auth).*)"] };

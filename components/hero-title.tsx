@@ -24,7 +24,7 @@ export default function HeroTitle() {
 	return (
 		<div
 			ref={scrollRef}
-			className="h-[75%] flex flex-col justify-center items-center text-[3rem] sm:[5rem] md:[7rem] lg:text-[10rem] font-bold uppercase"
+			className="h-full flex flex-col justify-center items-center text-[3rem] sm:[5rem] md:[7rem] lg:text-[10rem] font-bold uppercase"
 		>
 			<div className="flex">
 				<motion.div

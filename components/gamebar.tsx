@@ -3,17 +3,23 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoginButton } from "./login-button";
+import { motion } from "motion/react";
+import { SessionPayload } from "@/lib/session";
 
-export default function Gamebar() {
+export default function Gamebar({ session }: { session: SessionPayload }) {
 	const [isJoinRoomChosen, setIsJoinRoomChosen] = useState(true);
 	const router = useRouter();
-	console.log(isJoinRoomChosen);
 
 	return (
-		<div className="flex flex-col w-full h-[25%] text-background">
+		<motion.div
+			initial={{ y: "100%" }}
+			animate={{ y: 0 }}
+			transition={{ delay: 2 }}
+			className="flex flex-col w-full text-background"
+		>
 			<div className="flex justify-between relative">
 				<div
-					className={`absolute w-[50%] h-full bg-foreground left-0 transition-transform duration-[0.3s] ease-out ${
+					className={`absolute w-[50%] h-full bg-foreground left-0 transition-transform duration-[0.3s] ease-out rounded-t-full ${
 						isJoinRoomChosen ? "translate-x-0" : "translate-x-full"
 					}`}
 				/>
@@ -66,12 +72,12 @@ export default function Gamebar() {
 								}}
 							>
 								Create room
-                                <LoginButton />
+								<LoginButton />
 							</button>
 						</div>
 					</div>
 				)}
 			</div>
-		</div>
+		</motion.div>
 	);
 }
