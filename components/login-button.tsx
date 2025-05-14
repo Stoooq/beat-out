@@ -1,10 +1,10 @@
 "use client";
 
-import getGoogleOAuthURL from "@/lib/getGoogleAuthUrl";
+import getGoogleOAuthUrl from "@/lib/getGoogleOAuthUrl";
 
 export function LoginButton() {
 	return (
-		<a href={getGoogleOAuthURL()} className="btn">
+		<a href={getGoogleOAuthUrl()} className="btn">
 			Zaloguj przez Google
 		</a>
 	);
