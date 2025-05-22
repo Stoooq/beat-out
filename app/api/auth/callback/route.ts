@@ -18,8 +18,10 @@ export async function GET(request: Request) {
 
 	await updateSessionWithGoogleAuth(tokens);
 
-	// const videos = await getYouTubeVideos({ access_token: tokens!.access_token });
+	// const videos = await getYouTubeVideos({ access_token: tokens!.access_token })
+
 	//?my playlist id PLV2DHXu7oypSzzClzc6MuhKgGJBz-5w3Y
 
+	// return NextResponse.json({ videos }, { status: 200 });
 	redirect("/");
 }

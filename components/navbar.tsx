@@ -5,8 +5,10 @@ import { SquarePen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-export default function Sidebar({ session }: { session: SessionPayload }) {
+export default function Navbar({ session }: { session: SessionPayload }) {
 	const [isOpen, setIsOpen] = useState(false);
+
+	const [userName, setUserName] = useState(session.userName);
 
 	return (
 		<motion.div
@@ -51,14 +53,14 @@ export default function Sidebar({ session }: { session: SessionPayload }) {
 					>
 						<motion.button
 							onClick={() => setIsOpen((prev) => !prev)}
-							className="cursor-pointer p-4 relative z-60 text-[2rem] md:text-[3rem]"
+							className="cursor-pointer p-4 relative z-60 text-[1.5rem] md:text-[2rem]"
 						>
 							Menu
 						</motion.button>
-						<div className="flex gap-4">
-							{session.userName}
+						<button className="flex gap-4 p-2 cursor-pointer">
+							<input className="outline-none w-[120px]" defaultValue={session.userName} />
 							<SquarePen />
-						</div>
+						</button>
 					</motion.div>
 				)}
 			</AnimatePresence>
@@ -69,7 +71,7 @@ export default function Sidebar({ session }: { session: SessionPayload }) {
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ delay: 0.2 }}
-						className="text-background relative z-60 text-[2rem] md:text-[3rem]"
+						className="text-background relative z-60 text-[1.5rem] md:text-[2rem]"
 					>
 						<button
 							onClick={() => setIsOpen((prev) => !prev)}
@@ -77,8 +79,9 @@ export default function Sidebar({ session }: { session: SessionPayload }) {
 						>
 							Close
 						</button>
-						<div className="p-4 cursor-pointer">Create room</div>
-						<div className="p-4 cursor-pointer">Join room</div>
+						<div className="p-4 cursor-pointer">Sign in with Google</div>
+						<div className="p-4 cursor-pointer">Terms of Service</div>
+						<div className="p-4 cursor-pointer">Privacy Policy</div>
 					</motion.div>
 				)}
 			</AnimatePresence>

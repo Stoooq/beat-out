@@ -6,9 +6,12 @@ import { AuthTokens } from "./getGoogleOAuthTokens";
 
 const encodedKey = new TextEncoder().encode(process.env.SECRET);
 
-export type SessionPayload = {
+export type User = {
 	userId: string;
 	userName: string;
+};
+
+export type SessionPayload = User & {
 	expiresAt: Date;
 	googleTokens?: AuthTokens;
 };
@@ -29,9 +32,9 @@ export async function decrypt(
 			algorithms: ["HS256"],
 		});
 
-		if (payload.expiresAt && typeof payload.expiresAt === 'string') {
-            payload.expiresAt = new Date(payload.expiresAt);
-        }
+		if (payload.expiresAt && typeof payload.expiresAt === "string") {
+			payload.expiresAt = new Date(payload.expiresAt);
+		}
 
 		return payload as SessionPayload;
 	} catch (error) {
