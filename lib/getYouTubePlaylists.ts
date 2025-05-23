@@ -12,7 +12,7 @@ interface Playlists {
 			etag: string;
 			id: string;
 			snippet: {
-				publishedAt: string; // ISO 8601 date
+				publishedAt: string;
 				channelId: string;
 				title: string;
 				description: string;

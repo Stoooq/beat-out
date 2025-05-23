@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import type { Server as HTTPServer } from "node:http";
 import dotenv from "dotenv";
 import Redis from "ioredis";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { User } from "@/lib/session";
 
 dotenv.config();
@@ -20,6 +21,9 @@ if (!UPSTASH_REDIS_REST_URL) {
 
 const redis = new Redis(UPSTASH_REDIS_REST_URL);
 
+const pubClient = new Redis(UPSTASH_REDIS_REST_URL);
+const subClient = pubClient.duplicate();
+
 const app = new Hono();
 
 const httpServer = serve({
@@ -31,6 +35,7 @@ const io = new Server(httpServer as HTTPServer, {
 	cors: {
 		origin: "*",
 	},
+	adapter: createAdapter(pubClient, subClient),
 });
 
 io.on("connection", async (socket) => {
@@ -39,28 +44,66 @@ io.on("connection", async (socket) => {
 	socket.on(
 		"join-lobby",
 		async (payload: { lobbyId: string; userId: string; userName: string }) => {
+			// socket.join(payload.lobbyId)
+			// socket.to(payload.lobbyId).emit("lobby-updated", { player: payload.userName })
+			// socket.broadcast.emit("lobby-updated", { player: payload.userName })
+			
 			const { lobbyId, userId, userName } = payload;
 			const newPlayer: User = { userId, userName };
 			const key = `lobby:${lobbyId}`;
+			
+			console.log("user", userName,"joined lobby", lobbyId)
 
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
 
-			console.log(playersString, players);
-
 			if (!players?.some((player) => player.userId === newPlayer.userId)) {
 				players.push(newPlayer);
+				await redis.hset(key, { players: JSON.stringify(players) });
 			}
 
-			await redis.hset(key, { players: JSON.stringify(players) });
+			socket.data.lobbyId = lobbyId;
+			socket.data.user = newPlayer;
 
-			// socket.join(lobbyId);
-			// io.to(lobbyId).emit("lobby-updated", { lobbyId, players });
+			socket.join(lobbyId);
+			io.to(lobbyId).emit("lobby-updated", { lobbyId, players });
+		}
+	);
+
+	socket.on(
+		"leave-lobby",
+		async (payload: { lobbyId: string; userId: string; userName: string }) => {
+			const { lobbyId, userId, userName } = payload;
+			const key = `lobby:${lobbyId}`;
+
+			console.log("user", userName,"left lobby", lobbyId)
+
+			const playersString = await redis.hget(key, "players");
+			const players: User[] = playersString ? JSON.parse(playersString) : [];
+
+			const updatedPlayers = players.filter((p) => p.userId !== userId);
+
+			await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
+
+			socket.leave(lobbyId);
+
+			io.to(lobbyId).emit("lobby-updated", {
+				lobbyId,
+				players: updatedPlayers,
+			});
 		}
 	);
 
 	socket.on("disconnect", async () => {
 		console.log("disconected", socket.id);
+
+		const { lobbyId, user } = socket.data as {
+			lobbyId?: string;
+			user?: User;
+		};
+		if (lobbyId && user) {
+			socket.emit("leave-lobby", { lobbyId, userId: user.userId });
+		}
 	});
 });
 

@@ -29,9 +29,9 @@
 	--color-destructive: var(--destructive);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-accent: var(--accent);
-	--color-muted-foreground: var(--muted-foreground);
+	--color-muted-foreground: #E2E3E4; 
 	--color-muted: var(--muted);
-	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary-foreground: #151922; /*#0D0907*/
 	--color-secondary: var(--secondary);
 	--color-primary-foreground: var(--primary-foreground);
 	--color-primary: var(--primary);
