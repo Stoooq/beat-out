@@ -14,6 +14,7 @@ export type User = {
 export type SessionPayload = User & {
 	expiresAt: Date;
 	googleTokens?: AuthTokens;
+	lobbyId?: string;
 };
 
 export async function encrypt(payload: SessionPayload) {
@@ -106,6 +107,24 @@ export async function updateSessionWithGoogleAuth(
 	const updatedPayload: SessionPayload = {
 		...session,
 		googleTokens: googleAuthTokens,
+	};
+
+	const updatedSession = await encrypt(updatedPayload);
+
+	(await cookies()).set("session", updatedSession, {
+		httpOnly: true,
+		secure: true,
+		expires: session.expiresAt,
+	});
+}
+
+export async function updateSessionWithLobbyId(lobbyId: string) {
+	const session = await getSession();
+	if (!session) return null;
+
+	const updatedPayload: SessionPayload = {
+		...session,
+		lobbyId,
 	};
 
 	const updatedSession = await encrypt(updatedPayload);

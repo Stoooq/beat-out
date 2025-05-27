@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import Redis from "ioredis";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { User } from "@/lib/session";
+import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
 
 dotenv.config();
 
@@ -44,15 +45,11 @@ io.on("connection", async (socket) => {
 	socket.on(
 		"join-lobby",
 		async (payload: { lobbyId: string; userId: string; userName: string }) => {
-			// socket.join(payload.lobbyId)
-			// socket.to(payload.lobbyId).emit("lobby-updated", { player: payload.userName })
-			// socket.broadcast.emit("lobby-updated", { player: payload.userName })
-			
 			const { lobbyId, userId, userName } = payload;
 			const newPlayer: User = { userId, userName };
 			const key = `lobby:${lobbyId}`;
-			
-			console.log("user", userName,"joined lobby", lobbyId)
+
+			console.log("user", userName, "joined lobby", lobbyId);
 
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
@@ -76,7 +73,7 @@ io.on("connection", async (socket) => {
 			const { lobbyId, userId, userName } = payload;
 			const key = `lobby:${lobbyId}`;
 
-			console.log("user", userName,"left lobby", lobbyId)
+			console.log("user", userName, "left lobby", lobbyId);
 
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
@@ -91,6 +88,42 @@ io.on("connection", async (socket) => {
 				lobbyId,
 				players: updatedPlayers,
 			});
+		}
+	);
+
+	socket.on(
+		"start-game",
+		async (payload: { lobbyId: string; access_token: string }) => {
+			const { lobbyId, access_token } = payload;
+
+			const allTracks = access_token
+				? await getYouTubeVideos({
+						access_token: access_token,
+				  })
+				: null;
+
+			const key = `lobby:${lobbyId}`;
+			const playersString = await redis.hget(key, "players");
+			const players: User[] = playersString ? JSON.parse(playersString) : [];
+
+			const impostorIndex = Math.floor(Math.random() * players.length);
+			const impostorId = players[impostorIndex].userId;
+
+			if (allTracks) {
+				const impostorTrackIndex = Math.floor(Math.random() * allTracks.items.length);
+				const impostorTrack = allTracks.items[impostorTrackIndex].contentDetails.videoId
+				
+				const remainingTracks = allTracks.items.filter((_, index) => index !== impostorTrackIndex);
+				const commonTrackIndex = Math.floor(Math.random() * remainingTracks.length);
+				const commonTrack = remainingTracks[commonTrackIndex].contentDetails.videoId
+
+				console.log("game stareddddd", { impostorTrack, commonTrack });
+
+				io.to(lobbyId).emit("game-started", { impostorTrack, commonTrack, impostorId });
+			} else {
+				console.log("Not enough tracks to start game");
+				io.to(lobbyId).emit("game-error", { message: "Not enough tracks available" });
+			}
 		}
 	);
 

@@ -6,12 +6,35 @@ import { LoginButton } from "./login-button";
 import { motion } from "motion/react";
 import { SessionPayload } from "@/lib/session";
 import { createLobby } from "@/actions/create-lobby";
+import { useLobbyStore } from "@/state/lobbyStore";
+import { joinLobby } from "@/actions/join-lobby";
 
 export default function Gamebar({ session }: { session: SessionPayload }) {
-	const [lobbyInput, setLobbyInput] = useState("");
+	const { setLobby } = useLobbyStore();
 
+	const [lobbyInput, setLobbyInput] = useState("");
 	const [isJoinRoomChosen, setIsJoinRoomChosen] = useState(true);
 	const router = useRouter();
+
+	const handleJoinLobby = (lobbyId: string) => {
+		if (lobbyId) {
+			joinLobby(lobbyId);
+			setLobby({
+				lobbyId: lobbyId,
+			});
+			router.push(`/lobby/${lobbyId}`);
+		}
+	};
+
+	const handleCreateLobby = (lobbyId: string) => {
+		if (lobbyId) {
+			createLobby(lobbyId);
+			setLobby({
+				lobbyId: lobbyId,
+			});
+			router.push(`/lobby/${lobbyId}`);
+		}
+	};
 
 	return (
 		<motion.div
@@ -70,9 +93,7 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-primary rounded-[40px]">
 							<button
 								className="flex justify-center items-center w-full h-full bg-secondary text-foreground rounded-[34px]"
-								onClick={() => {
-									router.push(`/lobby/${lobbyInput}`);
-								}}
+								onClick={() => handleJoinLobby(lobbyInput)}
 							>
 								Join room
 							</button>
@@ -95,9 +116,7 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-primary rounded-[40px]">
 							<button
 								className="flex justify-center items-center w-full h-full bg-secondary text-foreground rounded-[34px]"
-								onClick={() => {
-									createLobby(`${lobbyInput}`);
-								}}
+								onClick={() => handleCreateLobby(lobbyInput)}
 							>
 								{session.googleTokens ? (
 									<div>Create room</div>

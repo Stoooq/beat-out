@@ -46,7 +46,7 @@ export async function getYouTubeVideos({
 }): Promise<Videos | null> {
 	try {
 		const res = await fetch(
-			`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=PLV2DHXu7oypSzzClzc6MuhKgGJBz-5w3Y&maxResults=10`,
+			`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=PLV2DHXu7oypSzzClzc6MuhKgGJBz-5w3Y&maxResults=5`,
 			{
 				headers: {
 					Authorization: `Bearer ${access_token}`,
