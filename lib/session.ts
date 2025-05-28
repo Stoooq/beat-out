@@ -106,8 +106,44 @@ export async function updateSessionWithGoogleAuth(
 
 	const updatedPayload: SessionPayload = {
 		...session,
-		googleTokens: googleAuthTokens,
+		googleTokens: {
+			access_token: googleAuthTokens.access_token,
+			expires_in: Date.now() + 70 * 1000,
+			refresh_token: googleAuthTokens.refresh_token,
+			scope: googleAuthTokens.scope,
+			token_type: googleAuthTokens.token_type,
+			id_token: googleAuthTokens.id_token,
+			refresh_token_expires_in: googleAuthTokens.refresh_token_expires_in,
+		},
 	};
+
+	console.log("session updated")
+
+	const updatedSession = await encrypt(updatedPayload);
+
+	(await cookies()).set("session", updatedSession, {
+		httpOnly: true,
+		secure: true,
+		expires: session.expiresAt,
+	});
+}
+
+export async function refreshSessionWithGoogleAuth(
+	googleAuthTokens: AuthTokens
+) {
+	const session = await getSession();
+	if (!session || !session.googleTokens) return null;
+
+	const updatedPayload: SessionPayload = {
+		...session,
+		googleTokens: {
+			...session.googleTokens,
+			access_token: googleAuthTokens.access_token,
+			expires_in: Date.now() + 70 * 1000,
+		},
+	};
+
+	console.log("session updated")
 
 	const updatedSession = await encrypt(updatedPayload);
 
