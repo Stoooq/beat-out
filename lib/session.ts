@@ -12,7 +12,7 @@ export type User = {
 };
 
 export type SessionPayload = User & {
-	expiresAt: Date;
+	expiresAt: number;
 	googleTokens?: AuthTokens;
 	lobbyId?: string;
 };
@@ -34,7 +34,7 @@ export async function decrypt(
 		});
 
 		if (payload.expiresAt && typeof payload.expiresAt === "string") {
-			payload.expiresAt = new Date(payload.expiresAt);
+			payload.expiresAt = payload.expiresAt;
 		}
 
 		return payload as SessionPayload;
@@ -106,9 +106,10 @@ export async function updateSessionWithGoogleAuth(
 
 	const updatedPayload: SessionPayload = {
 		...session,
+		expiresAt: Date.now() + googleAuthTokens.expires_in * 1000,
 		googleTokens: {
 			access_token: googleAuthTokens.access_token,
-			expires_in: Date.now() + 70 * 1000,
+			expires_in: googleAuthTokens.expires_in,
 			refresh_token: googleAuthTokens.refresh_token,
 			scope: googleAuthTokens.scope,
 			token_type: googleAuthTokens.token_type,
@@ -117,14 +118,19 @@ export async function updateSessionWithGoogleAuth(
 		},
 	};
 
-	console.log("session updated")
+	console.log(
+		"SESSION UPDATED WITH GOOGLE",
+		updatedPayload,
+		new Date(updatedPayload.googleTokens!.expires_in),
+		new Date(updatedPayload.expiresAt),
+	);
 
 	const updatedSession = await encrypt(updatedPayload);
 
 	(await cookies()).set("session", updatedSession, {
 		httpOnly: true,
 		secure: true,
-		expires: session.expiresAt,
+		expires: updatedPayload.expiresAt,
 	});
 }
 
@@ -136,21 +142,28 @@ export async function refreshSessionWithGoogleAuth(
 
 	const updatedPayload: SessionPayload = {
 		...session,
+		expiresAt: Date.now() + googleAuthTokens.expires_in * 1000,
 		googleTokens: {
 			...session.googleTokens,
 			access_token: googleAuthTokens.access_token,
-			expires_in: Date.now() + 70 * 1000,
+			expires_in: googleAuthTokens.expires_in,
+			refresh_token: googleAuthTokens.refresh_token ?? session.googleTokens.refresh_token,
 		},
 	};
 
-	console.log("session updated")
+	console.log(
+		"SESSION REFRESED WITH GOOGLE",
+		updatedPayload,
+		new Date(updatedPayload.googleTokens!.expires_in),
+		new Date(updatedPayload.expiresAt)
+	);
 
 	const updatedSession = await encrypt(updatedPayload);
 
 	(await cookies()).set("session", updatedSession, {
 		httpOnly: true,
 		secure: true,
-		expires: session.expiresAt,
+		expires: updatedPayload.expiresAt,
 	});
 }
 

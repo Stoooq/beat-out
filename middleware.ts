@@ -11,13 +11,10 @@ export async function middleware(request: NextRequest) {
 	const payload = cookie ? await decrypt(cookie) : null;
 	const response = NextResponse.next();
 
-	// console.log("cookie", cookie, "response", response, "payload", payload);
-
 	if (!cookie) {
 		const userId = crypto.randomUUID();
 		const userName = "#" + nano();
-		const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
-
+		const expiresAt = Date.now() + 8 * 60 * 60 * 1000;
 		const session = await encrypt({ userId, userName, expiresAt });
 
 		response.cookies.set("session", session, {
@@ -27,17 +24,27 @@ export async function middleware(request: NextRequest) {
 		});
 	}
 
-	console.log("GOOGLE TOKENS", payload?.googleTokens);
 	const now = Date.now();
-	if (
-		payload?.googleTokens &&
-		payload.googleTokens?.expires_in - now < 60 * 1000
-	) {
+	if (payload && payload.expiresAt - now < 60 * 1000) {
+		if (payload.googleTokens) {
 			const newTokens = await refreshGoogleAccessToken(
 				payload.googleTokens.refresh_token
 			);
-			console.log("NEW TOKENS", newTokens);
 			await refreshSessionWithGoogleAuth(newTokens);
+		}
+
+		const expiresAt = Date.now() + 8 * 60 * 60 * 1000;
+		const updatedSession = await encrypt({
+			userId: payload.userId,
+			userName: payload.userName,
+			expiresAt,
+		});
+
+		response.cookies.set("session", updatedSession, {
+			httpOnly: true,
+			secure: true,
+			expires: expiresAt,
+		});
 	}
 
 	return response;
