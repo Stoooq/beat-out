@@ -10,7 +10,5 @@ export const joinLobby = async (id: string) => {
 
 	await updateSessionWithLobbyId(id);
 
-	redirect(`/lobby/${id}`);
-
-	return { success: "Joined to lobby" };
+	redirect(`/lobby`);
 };

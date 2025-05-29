@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoginButton } from "./login-button";
 import { motion } from "motion/react";
@@ -14,25 +13,22 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 
 	const [lobbyInput, setLobbyInput] = useState("");
 	const [isJoinRoomChosen, setIsJoinRoomChosen] = useState(true);
-	const router = useRouter();
 
 	const handleJoinLobby = (lobbyId: string) => {
 		if (lobbyId) {
-			joinLobby(lobbyId);
 			setLobby({
 				lobbyId: lobbyId,
 			});
-			router.push(`/lobby/${lobbyId}`);
+			joinLobby(lobbyId);
 		}
 	};
 
 	const handleCreateLobby = (lobbyId: string) => {
 		if (lobbyId) {
-			createLobby(lobbyId);
 			setLobby({
 				lobbyId: lobbyId,
 			});
-			router.push(`/lobby/${lobbyId}`);
+			createLobby(lobbyId);
 		}
 	};
 

@@ -35,8 +35,7 @@ export async function middleware(request: NextRequest) {
 
 		const expiresAt = Date.now() + 8 * 60 * 60 * 1000;
 		const updatedSession = await encrypt({
-			userId: payload.userId,
-			userName: payload.userName,
+			...payload,
 			expiresAt,
 		});
 

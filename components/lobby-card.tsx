@@ -3,13 +3,11 @@
 import { SessionPayload, User } from "@/lib/session";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { ScrollArea } from "./ui/scroll-area";
 import { Videos } from "@/lib/getYouTubeVideos";
 import Image from "next/image";
 import { useLobbyStore } from "@/state/lobbyStore";
-
-const socket = io("http://localhost:3001");
+import { getSocket } from "@/lib/socket";
 
 export function LobbyCard({
 	lobbyId,
@@ -22,6 +20,7 @@ export function LobbyCard({
 	users: User[];
 	videos: Videos | null;
 }) {
+	const socket = getSocket();
 	const { lobbyId: storedLobbyId, setLobby } = useLobbyStore();
 
 	const [players, setPlayers] = useState<User[]>(users);

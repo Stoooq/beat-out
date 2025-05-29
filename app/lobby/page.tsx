@@ -3,21 +3,18 @@ import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
 import { redis } from "@/lib/redis";
 import { getSession, User } from "@/lib/session";
 
-export default async function Lobby({
-	params,
-}: {
-	params: Promise<{ id: string }>;
-}) {
-	const lobbyId = (await params).id;
-
+export default async function Lobby() {
 	const session = await getSession();
-
 	if (!session) {
 		return <div>no session</div>;
 	}
 
-	const users: User[] | null = await redis.hget(`lobby:${lobbyId}`, "players");
+	const lobbyId = session?.lobbyId;
+	if (!lobbyId) {
+		return <div>no lobby</div>;
+	}
 
+	const users: User[] | null = await redis.hget(`lobby:${lobbyId}`, "players");
 	if (!users) {
 		return <div>no players</div>;
 	}

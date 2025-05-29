@@ -1,7 +1,7 @@
 "use server";
 
 import { redis } from "@/lib/redis";
-import { getSession } from "@/lib/session";
+import { getSession, updateSessionWithLobbyId } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export const createLobby = async (id: string) => {
@@ -12,14 +12,14 @@ export const createLobby = async (id: string) => {
 	const lobby = {
 		lobbyId: id,
 		ownerId: session.userId,
-		players: [], //{ userId: session.userId, userName: session.userName }
+		players: [],
 	};
 
 	await redis.hset(`lobby:${lobby.lobbyId}`, {
 		...lobby,
 	});
 
-	redirect(`/lobby/${lobby.lobbyId}`);
+	await updateSessionWithLobbyId(id);
 
-	return { success: "Lobby created" };
+	redirect(`/lobby`);
 };

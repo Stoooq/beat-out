@@ -11,8 +11,6 @@ import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
 dotenv.config();
 
 const PORT = parseInt(process.env.PORT || "3001");
-// const HOST = process.env.HOST || "0.0.0.0";
-// const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:8787";
 const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
 
 if (!UPSTASH_REDIS_REST_URL) {

@@ -118,12 +118,7 @@ export async function updateSessionWithGoogleAuth(
 		},
 	};
 
-	console.log(
-		"SESSION UPDATED WITH GOOGLE",
-		updatedPayload,
-		new Date(updatedPayload.googleTokens!.expires_in),
-		new Date(updatedPayload.expiresAt),
-	);
+	console.log("SESSION UPDATED WITH GOOGLE", updatedPayload);
 
 	const updatedSession = await encrypt(updatedPayload);
 
@@ -147,16 +142,12 @@ export async function refreshSessionWithGoogleAuth(
 			...session.googleTokens,
 			access_token: googleAuthTokens.access_token,
 			expires_in: googleAuthTokens.expires_in,
-			refresh_token: googleAuthTokens.refresh_token ?? session.googleTokens.refresh_token,
+			refresh_token:
+				googleAuthTokens.refresh_token ?? session.googleTokens.refresh_token,
 		},
 	};
 
-	console.log(
-		"SESSION REFRESED WITH GOOGLE",
-		updatedPayload,
-		new Date(updatedPayload.googleTokens!.expires_in),
-		new Date(updatedPayload.expiresAt)
-	);
+	console.log("SESSION REFRESED WITH GOOGLE", updatedPayload);
 
 	const updatedSession = await encrypt(updatedPayload);
 
