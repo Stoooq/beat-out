@@ -40,6 +40,10 @@ const io = new Server(httpServer as HTTPServer, {
 io.on("connection", async (socket) => {
 	console.log("connected", socket.id);
 
+	setInterval(() => {
+		socket.emit("ping", { message: "ping" });
+	}, 30000)
+
 	socket.on(
 		"join-lobby",
 		async (payload: { lobbyId: string; userId: string; userName: string }) => {

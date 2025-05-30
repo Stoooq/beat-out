@@ -13,6 +13,8 @@ export type User = {
 
 export type SessionPayload = User & {
 	expiresAt: number;
+	iat?: number;
+	exp?: number;
 	googleTokens?: AuthTokens;
 	lobbyId?: string;
 };
@@ -54,7 +56,7 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 // export async function createSession(userId: string, userName: string) {
-// 	const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+// 	const expiresAt = Date.now() + 8 * 60 * 60 * 1000
 // 	const session = await encrypt({ userId, userName, expiresAt });
 
 // 	(await cookies()).set("session", session, {
@@ -76,21 +78,21 @@ export async function getSession(): Promise<SessionPayload | null> {
 // 	return payload;
 // }
 
-export async function updateSession(newUserName: string) {
-	const current = await getSession();
-	if (!current) return null;
+export async function updateSession(payload: Partial<SessionPayload>) {
+	const session = await getSession();
+	if (!session) return null;
 
 	const updatedPayload: SessionPayload = {
-		userId: current.userId,
-		userName: newUserName,
-		expiresAt: current.expiresAt,
+		...session,
+		...payload,
 	};
-	const newToken = await encrypt(updatedPayload);
 
-	(await cookies()).set("session", newToken, {
+	const updatedSession = await encrypt(updatedPayload);
+
+	(await cookies()).set("session", updatedSession, {
 		httpOnly: true,
 		secure: true,
-		expires: current.expiresAt,
+		expires: updatedPayload.expiresAt,
 	});
 }
 
@@ -98,80 +100,60 @@ export async function deleteSession() {
 	(await cookies()).delete({ name: "session", path: "/" });
 }
 
-export async function updateSessionWithGoogleAuth(
-	googleAuthTokens: AuthTokens
-) {
-	const session = await getSession();
-	if (!session) return null;
+// export async function updateSessionWithGoogleAuth(
+// 	googleAuthTokens: AuthTokens
+// ) {
+// 	const session = await getSession();
+// 	if (!session) return null;
 
-	const updatedPayload: SessionPayload = {
-		...session,
-		expiresAt: Date.now() + googleAuthTokens.expires_in * 1000,
-		googleTokens: {
-			access_token: googleAuthTokens.access_token,
-			expires_in: googleAuthTokens.expires_in,
-			refresh_token: googleAuthTokens.refresh_token,
-			scope: googleAuthTokens.scope,
-			token_type: googleAuthTokens.token_type,
-			id_token: googleAuthTokens.id_token,
-			refresh_token_expires_in: googleAuthTokens.refresh_token_expires_in,
-		},
-	};
+// 	const updatedPayload: SessionPayload = {
+// 		...session,
+// 		googleTokens: {
+// 			access_token: googleAuthTokens.access_token,
+// 			expires_in: googleAuthTokens.expires_in,
+// 			refresh_token: googleAuthTokens.refresh_token,
+// 			scope: googleAuthTokens.scope,
+// 			token_type: googleAuthTokens.token_type,
+// 			id_token: googleAuthTokens.id_token,
+// 			refresh_token_expires_in: googleAuthTokens.refresh_token_expires_in,
+// 		},
+// 	};
 
-	console.log("SESSION UPDATED WITH GOOGLE", updatedPayload);
+// 	console.log("SESSION UPDATED WITH GOOGLE", updatedPayload);
 
-	const updatedSession = await encrypt(updatedPayload);
+// 	await updateSession(updatedPayload);
+// }
 
-	(await cookies()).set("session", updatedSession, {
-		httpOnly: true,
-		secure: true,
-		expires: updatedPayload.expiresAt,
-	});
-}
+// export async function refreshSessionWithGoogleAuth(
+// 	googleAuthTokens: AuthTokens
+// ) {
+// 	const session = await getSession();
+// 	if (!session || !session.googleTokens) return null;
 
-export async function refreshSessionWithGoogleAuth(
-	googleAuthTokens: AuthTokens
-) {
-	const session = await getSession();
-	if (!session || !session.googleTokens) return null;
+// 	const updatedPayload: SessionPayload = {
+// 		...session,
+// 		googleTokens: {
+// 			...session.googleTokens,
+// 			access_token: googleAuthTokens.access_token,
+// 			expires_in: googleAuthTokens.expires_in,
+// 			refresh_token:
+// 				googleAuthTokens.refresh_token ?? session.googleTokens.refresh_token,
+// 		},
+// 	};
 
-	const updatedPayload: SessionPayload = {
-		...session,
-		expiresAt: Date.now() + googleAuthTokens.expires_in * 1000,
-		googleTokens: {
-			...session.googleTokens,
-			access_token: googleAuthTokens.access_token,
-			expires_in: googleAuthTokens.expires_in,
-			refresh_token:
-				googleAuthTokens.refresh_token ?? session.googleTokens.refresh_token,
-		},
-	};
+// 	console.log("SESSION REFRESED WITH GOOGLE", updatedPayload);
 
-	console.log("SESSION REFRESED WITH GOOGLE", updatedPayload);
+// 	await updateSession(updatedPayload);
+// }
 
-	const updatedSession = await encrypt(updatedPayload);
+// export async function updateSessionWithLobbyId(lobbyId: string) {
+// 	const session = await getSession();
+// 	if (!session) return null;
 
-	(await cookies()).set("session", updatedSession, {
-		httpOnly: true,
-		secure: true,
-		expires: updatedPayload.expiresAt,
-	});
-}
+// 	const updatedPayload: SessionPayload = {
+// 		...session,
+// 		lobbyId,
+// 	};
 
-export async function updateSessionWithLobbyId(lobbyId: string) {
-	const session = await getSession();
-	if (!session) return null;
-
-	const updatedPayload: SessionPayload = {
-		...session,
-		lobbyId,
-	};
-
-	const updatedSession = await encrypt(updatedPayload);
-
-	(await cookies()).set("session", updatedSession, {
-		httpOnly: true,
-		secure: true,
-		expires: session.expiresAt,
-	});
-}
+// 	await updateSession(updatedPayload);
+// }

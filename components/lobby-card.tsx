@@ -28,14 +28,6 @@ export function LobbyCard({
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!players.find((player) => player.userId === session.userId)) {
-			socket.emit("join-lobby", {
-				lobbyId: lobbyId,
-				userId: session.userId,
-				userName: session.userName,
-			});
-		}
-
 		socket.on(
 			"lobby-updated",
 			({ lobbyId, players }: { lobbyId: string; players: User[] }) => {
@@ -71,11 +63,21 @@ export function LobbyCard({
 			socket.off("lobby-updated");
 			socket.off("game-started");
 		};
-	}, [lobbyId, session.userId, session.userName, players]);
+	}, [lobbyId]);
+
+	useEffect(() => {
+		if (!players.find((player) => player.userId === session.userId)) {
+			socket.emit("join-lobby", {
+				lobbyId: lobbyId,
+				userId: session.userId,
+				userName: session.userName,
+			});
+		}
+	}, [lobbyId]);
 
 	useEffect(() => {
 		return () => {
-			if (lobbyId) {
+			if (pathname !== "/lobby" && lobbyId) {
 				socket.emit("leave-lobby", {
 					lobbyId: lobbyId,
 					userId: session.userId,

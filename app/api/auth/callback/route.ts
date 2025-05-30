@@ -1,6 +1,5 @@
 import { getGoogleOAuthTokens } from "@/lib/getGoogleOAuthTokens";
-import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
-import { updateSessionWithGoogleAuth } from "@/lib/session";
+import { updateSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
@@ -16,7 +15,10 @@ export async function GET(request: Request) {
 		return NextResponse.json({ error: "No tokens" }, { status: 400 });
 	}
 
-	await updateSessionWithGoogleAuth(tokens);
+	await updateSession({
+		expiresAt: Date.now() + tokens.expires_in * 1000,
+		googleTokens: tokens,
+	});
 
 	// const videos = await getYouTubeVideos({ access_token: tokens!.access_token })
 

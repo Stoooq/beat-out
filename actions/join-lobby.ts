@@ -1,6 +1,6 @@
 "use server";
 
-import { getSession, updateSessionWithLobbyId } from "@/lib/session";
+import { getSession, updateSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export const joinLobby = async (id: string) => {
@@ -8,7 +8,9 @@ export const joinLobby = async (id: string) => {
 
 	if (!session?.googleTokens) return { error: "Not authenticated" };
 
-	await updateSessionWithLobbyId(id);
+	await updateSession({
+		lobbyId: id,
+	})
 
 	redirect(`/lobby`);
 };
