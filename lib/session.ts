@@ -9,6 +9,7 @@ const encodedKey = new TextEncoder().encode(process.env.SECRET);
 export type User = {
 	userId: string;
 	userName: string;
+	points: number;
 };
 
 export type SessionPayload = User & {
@@ -85,6 +86,7 @@ export async function updateSession(payload: Partial<SessionPayload>) {
 	const updatedPayload: SessionPayload = {
 		...session,
 		...payload,
+		expiresAt: payload.expiresAt ?? session.expiresAt,
 	};
 
 	const updatedSession = await encrypt(updatedPayload);
@@ -92,7 +94,8 @@ export async function updateSession(payload: Partial<SessionPayload>) {
 	(await cookies()).set("session", updatedSession, {
 		httpOnly: true,
 		secure: true,
-		expires: updatedPayload.expiresAt,
+		expires: new Date(updatedPayload.expiresAt),
+		sameSite: "lax",
 	});
 }
 

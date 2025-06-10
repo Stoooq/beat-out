@@ -8,6 +8,7 @@ interface Player {
 interface LobbyState {
   lobbyId: string | null;
   players: Player[];
+  gameDuration: number;
   impostor?: {
     playerId: string;
     track: string;
@@ -20,6 +21,7 @@ interface LobbyState {
 export const useLobbyStore = create<LobbyState>((set) => ({
   lobbyId: null,
   players: [],
+  gameDuration: 30,
   setLobby: (data) => set((state) => ({ ...state, ...data })),
   resetLobby: () =>
     set({

@@ -47,13 +47,13 @@ export function LobbyCard({
 				commonTrack: string;
 				impostorId: string;
 			}) => {
-				console.log("Z LOBBY CARD", impostorTrack, commonTrack, impostorId);
 				setLobby({
 					impostor: {
 						playerId: impostorId,
 						track: impostorTrack,
 					},
 					commonTrack: commonTrack,
+					gameDuration: 30
 				});
 				router.push("/game");
 			}
@@ -88,7 +88,6 @@ export function LobbyCard({
 	}, [pathname]);
 
 	const handleStartGame = () => {
-		console.log("start game");
 		socket.emit("start-game", {
 			lobbyId: lobbyId,
 			access_token: session.googleTokens?.access_token,

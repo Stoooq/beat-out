@@ -20,7 +20,8 @@ export async function middleware(request: NextRequest) {
 		response.cookies.set("session", session, {
 			httpOnly: true,
 			secure: true,
-			expires: expiresAt,
+			expires: new Date(expiresAt),
+			sameSite: "lax",
 		});
 	}
 
@@ -33,16 +34,17 @@ export async function middleware(request: NextRequest) {
 		const newTokens = await refreshGoogleAccessToken(
 			session.googleTokens.refresh_token
 		);
-		await updateSession({
-			expiresAt: now + newTokens.expires_in * 1000,
-			googleTokens: {
-				...session.googleTokens,
-				access_token: newTokens.access_token,
-				expires_in: newTokens.expires_in,
-				refresh_token:
-					newTokens.refresh_token ?? session.googleTokens.refresh_token,
-			},
-		});
+		console.log("NEW GOOGLE TOKENS", newTokens);
+		// await updateSession({
+		// 	expiresAt: now + newTokens.expires_in * 1000,
+		// 	googleTokens: {
+		// 		...session.googleTokens,
+		// 		access_token: newTokens.access_token,
+		// 		expires_in: newTokens.expires_in,
+		// 		refresh_token:
+		// 			newTokens.refresh_token ?? session.googleTokens.refresh_token,
+		// 	},
+		// });
 	}
 
 	return response;

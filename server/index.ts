@@ -42,16 +42,16 @@ io.on("connection", async (socket) => {
 
 	setInterval(() => {
 		socket.emit("ping", { message: "ping" });
-	}, 30000)
+	}, 30000);
 
 	socket.on(
 		"join-lobby",
 		async (payload: { lobbyId: string; userId: string; userName: string }) => {
 			const { lobbyId, userId, userName } = payload;
-			const newPlayer: User = { userId, userName };
+			const newPlayer: User = { userId, userName, points: 0 };
 			const key = `lobby:${lobbyId}`;
 
-			console.log("user", userName, "joined lobby", lobbyId);
+			console.log("USER", userName, "JOINED LOBBY", lobbyId);
 
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
@@ -75,7 +75,7 @@ io.on("connection", async (socket) => {
 			const { lobbyId, userId, userName } = payload;
 			const key = `lobby:${lobbyId}`;
 
-			console.log("user", userName, "left lobby", lobbyId);
+			console.log("USER", userName, "LEFT LOBBY", lobbyId);
 
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
@@ -97,6 +97,7 @@ io.on("connection", async (socket) => {
 		"start-game",
 		async (payload: { lobbyId: string; access_token: string }) => {
 			const { lobbyId, access_token } = payload;
+			const key = `lobby:${lobbyId}`;
 
 			const allTracks = access_token
 				? await getYouTubeVideos({
@@ -104,7 +105,6 @@ io.on("connection", async (socket) => {
 				  })
 				: null;
 
-			const key = `lobby:${lobbyId}`;
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
 
@@ -112,19 +112,92 @@ io.on("connection", async (socket) => {
 			const impostorId = players[impostorIndex].userId;
 
 			if (allTracks) {
-				const impostorTrackIndex = Math.floor(Math.random() * allTracks.items.length);
-				const impostorTrack = allTracks.items[impostorTrackIndex].contentDetails.videoId
-				
-				const remainingTracks = allTracks.items.filter((_, index) => index !== impostorTrackIndex);
-				const commonTrackIndex = Math.floor(Math.random() * remainingTracks.length);
-				const commonTrack = remainingTracks[commonTrackIndex].contentDetails.videoId
+				const impostorTrackIndex = Math.floor(
+					Math.random() * allTracks.items.length
+				);
+				const impostorTrack =
+					allTracks.items[impostorTrackIndex].contentDetails.videoId;
 
-				console.log("game stareddddd", { impostorTrack, commonTrack });
+				const remainingTracks = allTracks.items.filter(
+					(_, index) => index !== impostorTrackIndex
+				);
+				const commonTrackIndex = Math.floor(
+					Math.random() * remainingTracks.length
+				);
+				const commonTrack =
+					remainingTracks[commonTrackIndex].contentDetails.videoId;
 
-				io.to(lobbyId).emit("game-started", { impostorTrack, commonTrack, impostorId });
+				const impostor = { playerId: impostorId, track: impostorTrack };
+
+				await redis.hset(key, {
+					impostor: JSON.stringify(impostor),
+					commonTrack: commonTrack,
+				});
+
+				console.log("GAME STARTED IN LOBBY", lobbyId);
+
+				io.to(lobbyId).emit("game-started", {
+					impostorTrack,
+					commonTrack,
+					impostorId,
+				});
 			} else {
 				console.log("Not enough tracks to start game");
-				io.to(lobbyId).emit("game-error", { message: "Not enough tracks available" });
+				// io.to(lobbyId).emit("game-error", {
+				// 	message: "Not enough tracks available",
+				// });
+			}
+		}
+	);
+
+	socket.on(
+		"cast-vote",
+		async (payload: {
+			lobbyId: string;
+			impostorId: string;
+			userId: string;
+			votedUserId: string;
+		}) => {
+			const { lobbyId, impostorId, userId, votedUserId } = payload;
+			const key = `lobby:${lobbyId}`;
+
+			const playersString = await redis.hget(key, "players");
+			const players: User[] = playersString ? JSON.parse(playersString) : [];
+
+			const votesString = await redis.hget(key, "votes");
+			const votes = votesString ? JSON.parse(votesString) : [];
+			votes.push({ userId, votedUserId });
+
+			await redis.hset(key, "votes", JSON.stringify(votes));
+
+			console.log("USER", userId, "VOTED ON", votedUserId);
+
+			if (votes.length >= players.length) {
+				const votesForImpostor = votes.filter(
+					(vote: { votedUserId: string }) => vote.votedUserId === impostorId
+				).length;
+
+				const updatedPlayers = players.map((player) => {
+					if (player.userId === impostorId) {
+						// Impostor gets points equal to number of players who didn't vote for him
+						return {
+							...player,
+							points: player.points + (players.length - votesForImpostor),
+						};
+					} else {
+						// Each player who voted for impostor gets one point
+						const vote = votes.find(
+							(v: { userId: string }) => v.userId === player.userId
+						);
+						if (vote && vote.votedUserId === impostorId) {
+							return { ...player, points: player.points + 1 };
+						}
+						return player;
+					}
+				});
+
+				await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
+				io.to(lobbyId).emit("voting-ended", { players: updatedPlayers });
 			}
 		}
 	);
