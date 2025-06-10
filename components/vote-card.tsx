@@ -12,21 +12,30 @@ export function VoteCard({
 	session: SessionPayload;
 	users: User[];
 }) {
-    const socket = getSocket();
-    const { impostor } = useLobbyStore()
+	const socket = getSocket();
+	const { impostor } = useLobbyStore();
 
-    // useEffect(() => {
-    //     socket.on()
-    // }, [])
-    
+	useEffect(() => {
+		socket.on(
+			"voting-ended",
+			({ updatedPlayers }: { updatedPlayers: User[] }) => {
+                console.log(updatedPlayers)
+            }
+		);
+
+		return () => {
+			socket.off("voting-ended");
+		};
+	}, []);
+
 	const handleVote = (playerId: string) => {
 		console.log("vote on", playerId);
-        socket.emit("cast-vote", {
-            lobbyId: session.lobbyId,
-            impostorId: impostor?.playerId,
-            userId: session.userId,
-            votedUserId: playerId,
-        })
+		socket.emit("cast-vote", {
+			lobbyId: session.lobbyId,
+			impostorId: impostor?.playerId,
+			userId: session.userId,
+			votedUserId: playerId,
+		});
 	};
 
 	return (
