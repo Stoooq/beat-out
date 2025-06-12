@@ -10,7 +10,6 @@ import { useCountdown } from "@/hooks/useCountdown";
 export function GameCard({ session }: { session: SessionPayload }) {
 	const router = useRouter();
 	const { impostor, commonTrack, gameDuration } = useLobbyStore();
-	console.log("Z GAME CARD", impostor?.track, commonTrack, impostor?.playerId);
 
 	const startCountdown = useCountdown(5);
 	const gameCountdown = useCountdown(gameDuration, { autoStart: false });

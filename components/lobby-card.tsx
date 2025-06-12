@@ -53,7 +53,7 @@ export function LobbyCard({
 						track: impostorTrack,
 					},
 					commonTrack: commonTrack,
-					gameDuration: 30
+					gameDuration: 10
 				});
 				router.push("/game");
 			}

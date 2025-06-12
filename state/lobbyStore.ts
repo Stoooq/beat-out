@@ -3,6 +3,7 @@ import { create } from "zustand";
 interface Player {
   userId: string;
   userName: string;
+  points: number;
 }
 
 interface LobbyState {
@@ -21,7 +22,7 @@ interface LobbyState {
 export const useLobbyStore = create<LobbyState>((set) => ({
   lobbyId: null,
   players: [],
-  gameDuration: 30,
+  gameDuration: 10,
   setLobby: (data) => set((state) => ({ ...state, ...data })),
   resetLobby: () =>
     set({

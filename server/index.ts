@@ -195,9 +195,9 @@ io.on("connection", async (socket) => {
 						return player;
 					}
 				});
-
+				console.log(updatedPlayers)
 				await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
-				io.to(lobbyId).emit("voting-ended", { players: updatedPlayers });
+				io.to(lobbyId).emit("voting-ended", { updatedPlayers });
 			}
 		}
 	);

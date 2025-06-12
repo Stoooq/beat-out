@@ -3,6 +3,7 @@
 import { SessionPayload, User } from "@/lib/session";
 import { getSocket } from "@/lib/socket";
 import { useLobbyStore } from "@/state/lobbyStore";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function VoteCard({
@@ -12,14 +13,19 @@ export function VoteCard({
 	session: SessionPayload;
 	users: User[];
 }) {
-	const socket = getSocket();
-	const { impostor } = useLobbyStore();
+    const socket = getSocket();
+	const { impostor, setLobby } = useLobbyStore();
+    
+    const router = useRouter()
 
 	useEffect(() => {
 		socket.on(
 			"voting-ended",
 			({ updatedPlayers }: { updatedPlayers: User[] }) => {
-                console.log(updatedPlayers)
+                setLobby({
+                    players: updatedPlayers
+                })
+                router.push("/results")
             }
 		);
 
@@ -29,7 +35,6 @@ export function VoteCard({
 	}, []);
 
 	const handleVote = (playerId: string) => {
-		console.log("vote on", playerId);
 		socket.emit("cast-vote", {
 			lobbyId: session.lobbyId,
 			impostorId: impostor?.playerId,
