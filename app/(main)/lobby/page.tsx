@@ -26,20 +26,14 @@ export default async function Lobby() {
 		: null;
 
 	return (
-		<div className="min-h-screen">
-			<div className="max-w-6xl mx-auto px-8">
-				<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-					<div className="w-full text-3xl md:text-6xl mb-4">
-						Lobby: {lobbyId}
-					</div>
-					<LobbyCard
-						lobbyId={lobbyId}
-						session={session}
-						users={users}
-						videos={videos}
-					/>
-				</div>
-			</div>
+		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
+			<div className="w-full text-3xl md:text-6xl mb-4">Lobby: {lobbyId}</div>
+			<LobbyCard
+				lobbyId={lobbyId}
+				session={session}
+				users={users}
+				videos={videos}
+			/>
 		</div>
 	);
 }

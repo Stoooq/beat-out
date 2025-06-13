@@ -19,12 +19,8 @@ export default async function Vote() {
 	}
 
 	return (
-		<div className="min-h-screen">
-			<div className="max-w-6xl mx-auto px-8">
-				<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-					<VoteCard session={session} users={users} />
-				</div>
-			</div>
+		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
+			<VoteCard session={session} users={users} />
 		</div>
 	);
 }

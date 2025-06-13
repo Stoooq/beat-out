@@ -95,9 +95,21 @@ io.on("connection", async (socket) => {
 
 	socket.on(
 		"start-game",
-		async (payload: { lobbyId: string; access_token: string }) => {
-			const { lobbyId, access_token } = payload;
+		async (payload: {
+			lobbyId: string;
+			gameOptions: { rounds: number; roundTime: number };
+			access_token: string;
+		}) => {
+			const { lobbyId, gameOptions, access_token } = payload;
 			const key = `lobby:${lobbyId}`;
+
+			const roundsLeftString = await redis.hget(key, "roundsLeft");
+			const roundsLeft = roundsLeftString ? JSON.parse(roundsLeftString) : gameOptions.rounds;
+
+			if (roundsLeft <= 0) {
+					console.log("coooooooos");
+					io.to(lobbyId).emit("game-ended");
+				}
 
 			const allTracks = access_token
 				? await getYouTubeVideos({
@@ -129,7 +141,12 @@ io.on("connection", async (socket) => {
 
 				const impostor = { playerId: impostorId, track: impostorTrack };
 
+				console.log("ROUNDS LEFT", roundsLeft, roundsLeft - 1);
+
 				await redis.hset(key, {
+					votes: [],
+					gameOptions: JSON.stringify(gameOptions),
+					roundsLeft: roundsLeft - 1,
 					impostor: JSON.stringify(impostor),
 					commonTrack: commonTrack,
 				});
@@ -195,7 +212,6 @@ io.on("connection", async (socket) => {
 						return player;
 					}
 				});
-				console.log(updatedPlayers)
 				await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
 				io.to(lobbyId).emit("voting-ended", { updatedPlayers });
 			}

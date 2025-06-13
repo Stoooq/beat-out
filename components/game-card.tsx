@@ -9,10 +9,10 @@ import { useCountdown } from "@/hooks/useCountdown";
 
 export function GameCard({ session }: { session: SessionPayload }) {
 	const router = useRouter();
-	const { impostor, commonTrack, gameDuration } = useLobbyStore();
+	const { impostor, commonTrack, gameOptions } = useLobbyStore();
 
 	const startCountdown = useCountdown(5);
-	const gameCountdown = useCountdown(gameDuration, { autoStart: false });
+	const gameCountdown = useCountdown(gameOptions.roundTime, { autoStart: false });
 
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
@@ -55,7 +55,7 @@ export function GameCard({ session }: { session: SessionPayload }) {
 								? impostor.track
 								: commonTrack
 						}
-						duration={gameDuration}
+						duration={gameOptions.roundTime}
 						timeLeft={gameCountdown.remaining}
 						setIsPlaying={setIsPlaying}
 					/>

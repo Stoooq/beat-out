@@ -43,11 +43,14 @@ export function ResultsCard({
 						track: impostorTrack,
 					},
 					commonTrack: commonTrack,
-					gameDuration: 10,
 				});
 				router.push("/game");
 			}
 		);
+
+		socket.on("game-ended", () => {
+			router.push("/lobby")
+		})
 
 		return () => {
 			socket.off("game-started");
@@ -56,7 +59,7 @@ export function ResultsCard({
 
 	return (
 		<div className="w-full h-[1200px] md:h-[600px] p-[24px] bg-secondary-foreground rounded-[32px]">
-			Rsults
+			Results
 			{players.map((player) => (
 				<div key={player.userId}>
 					<div>{player.userName}</div>

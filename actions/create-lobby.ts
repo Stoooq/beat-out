@@ -13,6 +13,11 @@ export const createLobby = async (id: string) => {
 		lobbyId: id,
 		ownerId: session.userId,
 		players: [],
+		impostor: { playerId: "", track: "" },
+		commonTrack: "",
+		votes: [],
+		gameOptions: { rounds: "", roundTime: "" },
+		roundsLeft: null,
 	};
 
 	await redis.hset(`lobby:${lobby.lobbyId}`, {

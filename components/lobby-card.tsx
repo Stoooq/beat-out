@@ -8,6 +8,7 @@ import { Videos } from "@/lib/getYouTubeVideos";
 import Image from "next/image";
 import { useLobbyStore } from "@/state/lobbyStore";
 import { getSocket } from "@/lib/socket";
+import { Slider } from "./ui/slider";
 
 export function LobbyCard({
 	lobbyId,
@@ -21,11 +22,34 @@ export function LobbyCard({
 	videos: Videos | null;
 }) {
 	const socket = getSocket();
-	const { lobbyId: storedLobbyId, setLobby } = useLobbyStore();
+	const { lobbyId: storedLobbyId, setLobby, gameOptions } = useLobbyStore();
 
 	const [players, setPlayers] = useState<User[]>(users);
 	const pathname = usePathname();
 	const router = useRouter();
+
+	const [rounds, setRounds] = useState(gameOptions.rounds);
+	const [roundTime, setRoundTime] = useState(gameOptions.roundTime);
+
+	const handleRoundsChange = (value: number) => {
+		setRounds(value);
+		setLobby({
+			gameOptions: {
+				...gameOptions,
+				rounds: rounds,
+			},
+		});
+	};
+
+	const handleRoundTimeChange = (value: number) => {
+		setRoundTime(value)
+		setLobby({
+			gameOptions: {
+				...gameOptions,
+				roundTime: roundTime,
+			},
+		});
+	};
 
 	useEffect(() => {
 		socket.on(
@@ -53,7 +77,6 @@ export function LobbyCard({
 						track: impostorTrack,
 					},
 					commonTrack: commonTrack,
-					gameDuration: 10
 				});
 				router.push("/game");
 			}
@@ -90,6 +113,7 @@ export function LobbyCard({
 	const handleStartGame = () => {
 		socket.emit("start-game", {
 			lobbyId: lobbyId,
+			gameOptions: gameOptions,
 			access_token: session.googleTokens?.access_token,
 		});
 	};
@@ -123,6 +147,22 @@ export function LobbyCard({
 			</div>
 			<div className="w-full bg-background rounded-[12px] p-[12px]">
 				<div className="flex flex-col gap-[12px] h-[528px]">
+					{rounds}
+					<Slider
+						defaultValue={[rounds]}
+						max={10}
+						min={1}
+						step={1}
+						onValueChange={(value) => handleRoundsChange(value[0])}
+					/>
+					{roundTime}
+					<Slider
+						defaultValue={[roundTime]}
+						max={60}
+						min={10}
+						step={1}
+						onValueChange={(value) => handleRoundTimeChange(value[0])}
+					/>
 					{videos &&
 						videos.items.map((video) => (
 							<div key={video.id}>
