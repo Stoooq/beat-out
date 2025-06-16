@@ -4,7 +4,6 @@ import { Server } from "socket.io";
 import type { Server as HTTPServer } from "node:http";
 import dotenv from "dotenv";
 import Redis from "ioredis";
-import { createAdapter } from "@socket.io/redis-adapter";
 import { User } from "@/lib/session";
 import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
 
@@ -20,9 +19,6 @@ if (!UPSTASH_REDIS_REST_URL) {
 
 const redis = new Redis(UPSTASH_REDIS_REST_URL);
 
-const pubClient = new Redis(UPSTASH_REDIS_REST_URL);
-const subClient = pubClient.duplicate();
-
 const app = new Hono();
 
 const httpServer = serve({
@@ -34,7 +30,6 @@ const io = new Server(httpServer as HTTPServer, {
 	cors: {
 		origin: "*",
 	},
-	adapter: createAdapter(pubClient, subClient),
 });
 
 io.on("connection", async (socket) => {
@@ -51,8 +46,6 @@ io.on("connection", async (socket) => {
 			const newPlayer: User = { userId, userName, points: 0 };
 			const key = `lobby:${lobbyId}`;
 
-			console.log("USER", userName, "JOINED LOBBY", lobbyId);
-
 			const playersString = await redis.hget(key, "players");
 			const players: User[] = playersString ? JSON.parse(playersString) : [];
 
@@ -61,8 +54,10 @@ io.on("connection", async (socket) => {
 				await redis.hset(key, { players: JSON.stringify(players) });
 			}
 
-			socket.data.lobbyId = lobbyId;
-			socket.data.user = newPlayer;
+			//todo socket.data.lobbyId = lobbyId; when user leave lobby (disconnect socket)
+			//todo socket.data.user = newPlayer; when user leave lobby (disconnect socket)
+
+			console.log("USER", userName, "JOINED LOBBY", lobbyId);
 
 			socket.join(lobbyId);
 			io.to(lobbyId).emit("lobby-updated", { lobbyId, players });
@@ -93,6 +88,18 @@ io.on("connection", async (socket) => {
 		}
 	);
 
+	socket.on("get-current-state", async (payload: { lobbyId: string }) => {
+		const { lobbyId } = payload;
+		const key = `lobby:${lobbyId}`;
+		const phase = await redis.hget(key, "phase");
+		const currentRound = await redis.hget(key, "currentRound");
+
+		io.to(lobbyId).emit("state-updated", {
+			phase,
+			currentRound: currentRound ? JSON.parse(currentRound) : null,
+		});
+	});
+
 	socket.on(
 		"start-game",
 		async (payload: {
@@ -102,14 +109,25 @@ io.on("connection", async (socket) => {
 		}) => {
 			const { lobbyId, gameOptions, access_token } = payload;
 			const key = `lobby:${lobbyId}`;
+			console.log(gameOptions.rounds, "ROUNDS");
 
 			const roundsLeftString = await redis.hget(key, "roundsLeft");
-			const roundsLeft = roundsLeftString ? JSON.parse(roundsLeftString) : gameOptions.rounds;
+			const roundsLeft = roundsLeftString
+				? JSON.parse(roundsLeftString)
+				: gameOptions.rounds;
+			console.log(roundsLeft);
 
 			if (roundsLeft <= 0) {
-					console.log("coooooooos");
-					io.to(lobbyId).emit("game-ended");
-				}
+				console.log("coooooooos");
+				await redis.hset(key, {
+					votes: [],
+					gameOptions: JSON.stringify({ rounds: "", roundTime: "" }),
+					roundsLeft: "",
+					impostor: JSON.stringify({ playerId: "", track: "" }),
+					commonTrack: "",
+				});
+				return io.to(lobbyId).emit("game-ended");
+			}
 
 			const allTracks = access_token
 				? await getYouTubeVideos({

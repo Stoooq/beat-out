@@ -36,17 +36,17 @@ export function LobbyCard({
 		setLobby({
 			gameOptions: {
 				...gameOptions,
-				rounds: rounds,
+				rounds: value,
 			},
 		});
 	};
 
 	const handleRoundTimeChange = (value: number) => {
-		setRoundTime(value)
+		setRoundTime(value);
 		setLobby({
 			gameOptions: {
 				...gameOptions,
-				roundTime: roundTime,
+				roundTime: value,
 			},
 		});
 	};
@@ -86,6 +86,12 @@ export function LobbyCard({
 			socket.off("lobby-updated");
 			socket.off("game-started");
 		};
+	}, [lobbyId]);
+
+	useEffect(() => {
+		socket.emit("get-current-state", {
+			lobbyId: lobbyId,
+		});
 	}, [lobbyId]);
 
 	useEffect(() => {

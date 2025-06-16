@@ -17,7 +17,9 @@ export const createLobby = async (id: string) => {
 		commonTrack: "",
 		votes: [],
 		gameOptions: { rounds: "", roundTime: "" },
-		roundsLeft: null,
+		roundsLeft: "",
+		currentRound: "",
+		phase: "",
 	};
 
 	await redis.hset(`lobby:${lobby.lobbyId}`, {

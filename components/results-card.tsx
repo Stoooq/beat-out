@@ -14,13 +14,14 @@ export function ResultsCard({
 	session: SessionPayload;
 }) {
 	const socket = getSocket();
-	const { players, setLobby } = useLobbyStore();
+	const { players, setLobby, gameOptions } = useLobbyStore();
 
 	const router = useRouter();
 
 	const handleNextRound = () => {
 		socket.emit("start-game", {
 			lobbyId: lobbyId,
+			gameOptions: gameOptions,
 			access_token: session.googleTokens?.access_token,
 		});
 	};
@@ -49,8 +50,14 @@ export function ResultsCard({
 		);
 
 		socket.on("game-ended", () => {
-			router.push("/lobby")
-		})
+			setLobby({
+				gameOptions: {
+					rounds: 3,
+					roundTime: 30,
+				},
+			});
+			router.push("/lobby");
+		});
 
 		return () => {
 			socket.off("game-started");
