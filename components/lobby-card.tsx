@@ -57,25 +57,24 @@ export function LobbyCard({
 			({ lobbyId, players }: { lobbyId: string; players: User[] }) => {
 				setPlayers(players);
 				console.log(`${lobbyId} User connected: ${Array(players)}`);
+				//todo when player joins play sound
 			}
 		);
 
 		socket.on(
 			"game-started",
 			({
-				impostorTrack,
+				currentRound,
+				impostor,
 				commonTrack,
-				impostorId,
 			}: {
-				impostorTrack: string;
+				currentRound: number,
+				impostor: { playerId: string, track: string },
 				commonTrack: string;
-				impostorId: string;
 			}) => {
 				setLobby({
-					impostor: {
-						playerId: impostorId,
-						track: impostorTrack,
-					},
+					currentRound: currentRound,
+					impostor: impostor,
 					commonTrack: commonTrack,
 				});
 				router.push("/game");
@@ -119,8 +118,8 @@ export function LobbyCard({
 	const handleStartGame = () => {
 		socket.emit("start-game", {
 			lobbyId: lobbyId,
-			gameOptions: gameOptions,
 			access_token: session.googleTokens?.access_token,
+			gameOptions: gameOptions,
 		});
 	};
 

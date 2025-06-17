@@ -7,9 +7,14 @@ export default async function Game() {
 		return <div>no session</div>;
 	}
 
+	const lobbyId = session?.lobbyId;
+	if (!lobbyId) {
+		return <div>no lobby</div>;
+	}
+
 	return (
 		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-			<GameCard session={session} />
+			<GameCard lobbyId={lobbyId} session={session} />
 		</div>
 	);
 }

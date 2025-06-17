@@ -6,8 +6,11 @@ import { AudioPlayer } from "./audio-player";
 import { useLobbyStore } from "@/state/lobbyStore";
 import { useRouter } from "next/navigation";
 import { useCountdown } from "@/hooks/useCountdown";
+import { getSocket } from "@/lib/socket";
 
-export function GameCard({ session }: { session: SessionPayload }) {
+export function GameCard({ lobbyId, session }: { lobbyId: string, session: SessionPayload }) {
+	const socket = getSocket();
+	
 	const router = useRouter();
 	const { impostor, commonTrack, gameOptions } = useLobbyStore();
 
@@ -25,6 +28,9 @@ export function GameCard({ session }: { session: SessionPayload }) {
 	useEffect(() => {
 		if (!isPlaying) return;
 		if (gameCountdown.isFinished) {
+			socket.emit("start-voting", {
+				lobbyId: lobbyId,
+			})
 			router.push("/vote");
 		}
 	}, [gameCountdown.remaining, isPlaying]);

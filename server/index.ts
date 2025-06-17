@@ -5,7 +5,12 @@ import type { Server as HTTPServer } from "node:http";
 import dotenv from "dotenv";
 import Redis from "ioredis";
 import { User } from "@/lib/session";
-import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
+import { joinLobbyHandler } from "./handlers/joinLobby";
+import { leaveLobbyHandler } from "./handlers/leaveLobby";
+import { getCurrentStateHandler } from "./handlers/getCurrentState";
+import { startGameHandler } from "./handlers/startGame";
+import { startRoundHandler } from "./handlers/startRound";
+import { castVoteHandler } from "./handlers/castVote";
 
 dotenv.config();
 
@@ -39,202 +44,17 @@ io.on("connection", async (socket) => {
 		socket.emit("ping", { message: "ping" });
 	}, 30000);
 
-	socket.on(
-		"join-lobby",
-		async (payload: { lobbyId: string; userId: string; userName: string }) => {
-			const { lobbyId, userId, userName } = payload;
-			const newPlayer: User = { userId, userName, points: 0 };
-			const key = `lobby:${lobbyId}`;
+	joinLobbyHandler(io, socket, redis);
 
-			const playersString = await redis.hget(key, "players");
-			const players: User[] = playersString ? JSON.parse(playersString) : [];
+	leaveLobbyHandler(io, socket, redis);
 
-			if (!players?.some((player) => player.userId === newPlayer.userId)) {
-				players.push(newPlayer);
-				await redis.hset(key, { players: JSON.stringify(players) });
-			}
+	getCurrentStateHandler(io, socket, redis);
 
-			//todo socket.data.lobbyId = lobbyId; when user leave lobby (disconnect socket)
-			//todo socket.data.user = newPlayer; when user leave lobby (disconnect socket)
+	startGameHandler(io, socket, redis);
 
-			console.log("USER", userName, "JOINED LOBBY", lobbyId);
+	startRoundHandler(io, socket, redis);
 
-			socket.join(lobbyId);
-			io.to(lobbyId).emit("lobby-updated", { lobbyId, players });
-		}
-	);
-
-	socket.on(
-		"leave-lobby",
-		async (payload: { lobbyId: string; userId: string; userName: string }) => {
-			const { lobbyId, userId, userName } = payload;
-			const key = `lobby:${lobbyId}`;
-
-			console.log("USER", userName, "LEFT LOBBY", lobbyId);
-
-			const playersString = await redis.hget(key, "players");
-			const players: User[] = playersString ? JSON.parse(playersString) : [];
-
-			const updatedPlayers = players.filter((p) => p.userId !== userId);
-
-			await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
-
-			socket.leave(lobbyId);
-
-			io.to(lobbyId).emit("lobby-updated", {
-				lobbyId,
-				players: updatedPlayers,
-			});
-		}
-	);
-
-	socket.on("get-current-state", async (payload: { lobbyId: string }) => {
-		const { lobbyId } = payload;
-		const key = `lobby:${lobbyId}`;
-		const phase = await redis.hget(key, "phase");
-		const currentRound = await redis.hget(key, "currentRound");
-
-		io.to(lobbyId).emit("state-updated", {
-			phase,
-			currentRound: currentRound ? JSON.parse(currentRound) : null,
-		});
-	});
-
-	socket.on(
-		"start-game",
-		async (payload: {
-			lobbyId: string;
-			gameOptions: { rounds: number; roundTime: number };
-			access_token: string;
-		}) => {
-			const { lobbyId, gameOptions, access_token } = payload;
-			const key = `lobby:${lobbyId}`;
-			console.log(gameOptions.rounds, "ROUNDS");
-
-			const roundsLeftString = await redis.hget(key, "roundsLeft");
-			const roundsLeft = roundsLeftString
-				? JSON.parse(roundsLeftString)
-				: gameOptions.rounds;
-			console.log(roundsLeft);
-
-			if (roundsLeft <= 0) {
-				console.log("coooooooos");
-				await redis.hset(key, {
-					votes: [],
-					gameOptions: JSON.stringify({ rounds: "", roundTime: "" }),
-					roundsLeft: "",
-					impostor: JSON.stringify({ playerId: "", track: "" }),
-					commonTrack: "",
-				});
-				return io.to(lobbyId).emit("game-ended");
-			}
-
-			const allTracks = access_token
-				? await getYouTubeVideos({
-						access_token: access_token,
-				  })
-				: null;
-
-			const playersString = await redis.hget(key, "players");
-			const players: User[] = playersString ? JSON.parse(playersString) : [];
-
-			const impostorIndex = Math.floor(Math.random() * players.length);
-			const impostorId = players[impostorIndex].userId;
-
-			if (allTracks) {
-				const impostorTrackIndex = Math.floor(
-					Math.random() * allTracks.items.length
-				);
-				const impostorTrack =
-					allTracks.items[impostorTrackIndex].contentDetails.videoId;
-
-				const remainingTracks = allTracks.items.filter(
-					(_, index) => index !== impostorTrackIndex
-				);
-				const commonTrackIndex = Math.floor(
-					Math.random() * remainingTracks.length
-				);
-				const commonTrack =
-					remainingTracks[commonTrackIndex].contentDetails.videoId;
-
-				const impostor = { playerId: impostorId, track: impostorTrack };
-
-				console.log("ROUNDS LEFT", roundsLeft, roundsLeft - 1);
-
-				await redis.hset(key, {
-					votes: [],
-					gameOptions: JSON.stringify(gameOptions),
-					roundsLeft: roundsLeft - 1,
-					impostor: JSON.stringify(impostor),
-					commonTrack: commonTrack,
-				});
-
-				console.log("GAME STARTED IN LOBBY", lobbyId);
-
-				io.to(lobbyId).emit("game-started", {
-					impostorTrack,
-					commonTrack,
-					impostorId,
-				});
-			} else {
-				console.log("Not enough tracks to start game");
-				// io.to(lobbyId).emit("game-error", {
-				// 	message: "Not enough tracks available",
-				// });
-			}
-		}
-	);
-
-	socket.on(
-		"cast-vote",
-		async (payload: {
-			lobbyId: string;
-			impostorId: string;
-			userId: string;
-			votedUserId: string;
-		}) => {
-			const { lobbyId, impostorId, userId, votedUserId } = payload;
-			const key = `lobby:${lobbyId}`;
-
-			const playersString = await redis.hget(key, "players");
-			const players: User[] = playersString ? JSON.parse(playersString) : [];
-
-			const votesString = await redis.hget(key, "votes");
-			const votes = votesString ? JSON.parse(votesString) : [];
-			votes.push({ userId, votedUserId });
-
-			await redis.hset(key, "votes", JSON.stringify(votes));
-
-			console.log("USER", userId, "VOTED ON", votedUserId);
-
-			if (votes.length >= players.length) {
-				const votesForImpostor = votes.filter(
-					(vote: { votedUserId: string }) => vote.votedUserId === impostorId
-				).length;
-
-				const updatedPlayers = players.map((player) => {
-					if (player.userId === impostorId) {
-						// Impostor gets points equal to number of players who didn't vote for him
-						return {
-							...player,
-							points: player.points + (players.length - votesForImpostor),
-						};
-					} else {
-						// Each player who voted for impostor gets one point
-						const vote = votes.find(
-							(v: { userId: string }) => v.userId === player.userId
-						);
-						if (vote && vote.votedUserId === impostorId) {
-							return { ...player, points: player.points + 1 };
-						}
-						return player;
-					}
-				});
-				await redis.hset(key, { players: JSON.stringify(updatedPlayers) });
-				io.to(lobbyId).emit("voting-ended", { updatedPlayers });
-			}
-		}
-	);
+	castVoteHandler(io, socket, redis);
 
 	socket.on("disconnect", async () => {
 		console.log("disconected", socket.id);
