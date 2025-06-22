@@ -7,17 +7,43 @@ import { useLobbyStore } from "@/state/lobbyStore";
 import { useRouter } from "next/navigation";
 import { useCountdown } from "@/hooks/useCountdown";
 import { getSocket } from "@/lib/socket";
+import OverlayCard from "./overlay-card";
 
-export function GameCard({ lobbyId, session }: { lobbyId: string, session: SessionPayload }) {
+export function GameCard({
+	lobbyId,
+	session,
+}: {
+	lobbyId: string;
+	session: SessionPayload;
+}) {
 	const socket = getSocket();
-	
+
 	const router = useRouter();
 	const { impostor, commonTrack, gameOptions } = useLobbyStore();
 
-	const startCountdown = useCountdown(5);
-	const gameCountdown = useCountdown(gameOptions.roundTime, { autoStart: false });
+	const startCountdown = useCountdown(1000, { autoStart: false });
+	const gameCountdown = useCountdown(gameOptions.roundTime, {
+		autoStart: false,
+	});
 
 	const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+	useEffect(() => {
+		socket.on(
+			"role-reveal",
+			({
+				currentRound,
+				impostor,
+				commonTrack,
+			}: {
+				currentRound: number;
+				impostor: { playerId: string; track: string };
+				commonTrack: string;
+			}) => {
+				
+			}
+		);
+	}, []);
 
 	useEffect(() => {
 		if (startCountdown.isFinished) {
@@ -30,7 +56,7 @@ export function GameCard({ lobbyId, session }: { lobbyId: string, session: Sessi
 		if (gameCountdown.isFinished) {
 			socket.emit("start-voting", {
 				lobbyId: lobbyId,
-			})
+			});
 			router.push("/vote");
 		}
 	}, [gameCountdown.remaining, isPlaying]);
@@ -40,7 +66,7 @@ export function GameCard({ lobbyId, session }: { lobbyId: string, session: Sessi
 	}
 
 	return (
-		<div className="grid grid-cols-1 gap-[24px] w-full h-[1200px] md:h-[600px] p-[24px] bg-secondary-foreground rounded-[32px]">
+		<OverlayCard className="rid grid-cols-1 gap-[24px]">
 			{gameCountdown.remaining}
 			{!startCountdown.isFinished ? (
 				<>
@@ -67,6 +93,6 @@ export function GameCard({ lobbyId, session }: { lobbyId: string, session: Sessi
 					/>
 				</div>
 			)}
-		</div>
+		</OverlayCard>
 	);
 }

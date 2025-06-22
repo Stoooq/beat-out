@@ -9,7 +9,7 @@ export default async function Home() {
 	if (!session) {
 		return <>No session</>;
 	}
-
+	//bg-[url('/lalka_bg_blue.jpg')] bg-no-repeat bg-cover bg-blend-overlay
 	return (
 		<div className="min-h-screen">
 			<Navbar session={session} />

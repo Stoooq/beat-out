@@ -12,6 +12,7 @@ interface LobbyState {
 	gameOptions: {
 		rounds: number;
 		roundTime: number;
+		playlistId: string;
 	};
 	currentRound: number;
 	impostor: {
@@ -29,6 +30,7 @@ export const useLobbyStore = create<LobbyState>((set) => ({
 	gameOptions: {
 		rounds: 3,
 		roundTime: 10,
+		playlistId: "",
 	},
 	currentRound: 0,
 	impostor: {

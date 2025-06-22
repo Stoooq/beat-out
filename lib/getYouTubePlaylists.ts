@@ -1,5 +1,5 @@
-interface Playlists {
-	playlists: {
+export interface Playlists {
+	
 		kind: string;
 		etag: string;
 		nextPageToken?: string;
@@ -53,7 +53,6 @@ interface Playlists {
 				itemCount: number;
 			};
 		}>;
-	};
 }
 
 export async function getYouTubePlaylists({
@@ -63,7 +62,7 @@ export async function getYouTubePlaylists({
 }): Promise<Playlists | null> {
 	try {
 		const res = await fetch(
-			`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true`,
+			`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=5`,
 			{
 				headers: {
 					Authorization: `Bearer ${access_token}`,

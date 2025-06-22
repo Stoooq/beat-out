@@ -8,7 +8,7 @@ export function startRoundHandler(io: Server, socket: Socket, redis: Redis) {
 		async (payload: {
 			lobbyId: string;
 			access_token: string;
-			gameOptions: { rounds: number; roundTime: number };
+			gameOptions: { rounds: number; roundTime: number; playlistId: string };
 		}) => {
 			const { lobbyId, access_token, gameOptions } = payload;
 			const key = `lobby:${lobbyId}`;
@@ -22,7 +22,15 @@ export function startRoundHandler(io: Server, socket: Socket, redis: Redis) {
 				return io.to(lobbyId).emit("game-ended");
 			}
 
-			await initializeRound(io, lobbyId, redis, currentRound + 1, access_token, 'round-started');
+			await initializeRound(
+				io,
+				lobbyId,
+				redis,
+				currentRound + 1,
+				access_token,
+				"round-started",
+				gameOptions.playlistId
+			);
 		}
 	);
 }

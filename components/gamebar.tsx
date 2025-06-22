@@ -41,14 +41,11 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 		>
 			<div className="flex justify-between relative text-[1rem] md:text-[1.5rem]">
 				<div
-					className={`absolute w-[50%] h-[50%] bg-foreground left-0 transition-transform duration-[0.3s] ease-out rounded-t-full ${
+					className={`absolute w-[50%] h-[50%] bg-[var(--bg)] left-0 transition-transform duration-[0.3s] ease-out rounded-t-full ${
 						isJoinRoomChosen ? "translate-x-0" : "translate-x-full"
 					}`}
 				/>
-				<div className="absolute w-[50%] h-[50%] bg-foreground left-0 top-[50%] transition-transform duration-[0.3s] ease-out" />
-				{/* <div className="flex justify-center absolute w-full h-[50%] bg-blue-200 top-[50%] transition-transform duration-[0.3s] ease-out">
-					<div className="w-[20%] h-full bg-green-200" />
-				</div> */}
+				<div className="absolute w-[50%] h-[50%] bg-[var(--bg)] left-0 top-[50%] transition-transform duration-[0.3s] ease-out" />
 				<div className="w-full p-4 relative z-10">
 					<button
 						className={`cursor-pointer w-full h-full text-center transition-colors duration-[0.2s] ${
@@ -71,7 +68,7 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 				</div>
 			</div>
 
-			<div className="w-full h-full bg-foreground p-4 text-[1.5rem] md:text-[2rem]">
+			<div className="w-full h-full bg-[var(--bg)] p-4 text-[1.5rem] md:text-[2rem]">
 				{isJoinRoomChosen ? (
 					<div className="flex flex-col md:flex-row gap-4">
 						<div className="flex gap-4 relative h-[60px] md:h-[80px] bg-background text-foreground rounded-full">
@@ -86,9 +83,9 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 								}}
 							/>
 						</div>
-						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-primary rounded-[40px]">
+						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-[var(--bg-light)] rounded-[40px]">
 							<button
-								className="flex justify-center items-center w-full h-full bg-secondary text-foreground rounded-[34px]"
+								className="flex justify-center items-center w-full h-full bg-[var(--bg-light)] text-foreground rounded-[34px]"
 								onClick={() => handleJoinLobby(lobbyInput)}
 							>
 								Join room
@@ -109,9 +106,9 @@ export default function Gamebar({ session }: { session: SessionPayload }) {
 								}}
 							/>
 						</div>
-						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-primary rounded-[40px]">
+						<div className="flex justify-center items-center w-full h-[60px] md:h-[80px] p-[6px] bg-[var(--bg-light)] rounded-[40px]">
 							<button
-								className="flex justify-center items-center w-full h-full bg-secondary text-foreground rounded-[34px]"
+								className="flex justify-center items-center w-full h-full bg-[var(--bg-light)] text-foreground rounded-[34px]"
 								onClick={() => handleCreateLobby(lobbyInput)}
 							>
 								{session.googleTokens ? (

@@ -9,7 +9,8 @@ export async function initializeRound(
 	redis: Redis,
 	currentRound: number,
 	access_token: string,
-	eventName: "game-started" | "round-started"
+	eventName: "game-started" | "round-started",
+	playlistId: string
 ) {
 	const key = `lobby:${lobbyId}`;
 
@@ -21,6 +22,7 @@ export async function initializeRound(
 	const tracks = access_token
 		? await getYouTubeVideos({
 				access_token: access_token,
+				playlistId,
 		  })
 		: null;
 
@@ -37,21 +39,29 @@ export async function initializeRound(
 		const commonTrack =
 			remainingTracks[commonTrackIndex].contentDetails.videoId;
 
-		await redis.hset(key, {
-			votes: JSON.stringify([]),
-			currentRound: currentRound,
-			impostor: JSON.stringify({
-				playerId: impostorPlayer.userId,
-				track: impostorTrack,
-			}),
-			commonTrack: commonTrack,
-			phase: "game",
-		});
-
-		io.to(lobbyId).emit(eventName, {
+		io.to(lobbyId).emit("role-reveal", {
 			currentRound: currentRound,
 			impostor: { playerId: impostorPlayer.userId, track: impostorTrack },
 			commonTrack: commonTrack,
 		});
+
+		setTimeout(async () => {
+			await redis.hset(key, {
+				votes: JSON.stringify([]),
+				currentRound: currentRound,
+				impostor: JSON.stringify({
+					playerId: impostorPlayer.userId,
+					track: impostorTrack,
+				}),
+				commonTrack: commonTrack,
+				phase: "game",
+			});
+
+			io.to(lobbyId).emit(eventName, {
+				currentRound: currentRound,
+				impostor: { playerId: impostorPlayer.userId, track: impostorTrack },
+				commonTrack: commonTrack,
+			});
+		}, 5000);
 	}
 }

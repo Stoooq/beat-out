@@ -1,5 +1,5 @@
 import { LobbyCard } from "@/components/lobby-card";
-import { getYouTubeVideos } from "@/lib/getYouTubeVideos";
+import { getYouTubePlaylists } from "@/lib/getYouTubePlaylists";
 import { redis } from "@/lib/redis";
 import { getSession, User } from "@/lib/session";
 
@@ -19,8 +19,13 @@ export default async function Lobby() {
 		return <div>no players</div>;
 	}
 
-	const videos = session.googleTokens
-		? await getYouTubeVideos({
+	const ownerId: string | null = await redis.hget(`lobby:${lobbyId}`, "ownerId");
+	if (!ownerId) {
+		return <div>no ownerId</div>
+	}
+
+	const playlists = session.googleTokens
+		? await getYouTubePlaylists({
 				access_token: session.googleTokens.access_token,
 		  })
 		: null;
@@ -30,9 +35,10 @@ export default async function Lobby() {
 			<div className="w-full text-3xl md:text-6xl mb-4">Lobby: {lobbyId}</div>
 			<LobbyCard
 				lobbyId={lobbyId}
+				ownerId={ownerId}
 				session={session}
 				users={users}
-				videos={videos}
+				playlists={playlists}
 			/>
 		</div>
 	);

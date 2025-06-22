@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -12,15 +11,15 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-        <div className="min-h-screen relative overflow-x-hidden">
-            <Image
-                src="/shape-4.svg"
-                width={80}
-                height={80}
-                alt="rotating shape"
-                className="absolute top-0 right-0 w-[800px] h-[800px] animate-[spin_10s_linear_infinite] translate-x-1/2 -translate-y-1/2"
-            />
-            <div className="max-w-6xl mx-auto px-8">{children}</div>
-        </div>
+		<div className="min-h-screen relative overflow-x-hidden bg-[url('/background-red.svg')] bg-no-repeat bg-cover bg-blend-overlay">
+			{/* <div className="absolute bottom-1/2 left-1/2 translate-x-[50px] w-[350px] h-[350px] rounded-full bg-[var(--bg-color1)] -z-10" />
+			<div className="absolute bottom-1/2 left-1/2 w-[350px] h-[350px] rounded-full bg-[var(--bg-color2)] -z-10" />
+			<div className="absolute bottom-1/2 left-1/2 w-[350px] h-[350px] rounded-full bg-[var(--bg-color3)] -z-10" /> */}
+			{/* <div className="absolute bottom-0 left-[25%] w-[25%] h-[600px] bg-[var(--text-muted)] -z-10" />
+			<div className="absolute bottom-0 left-[50%] w-[25%] h-[400px] bg-[var(--text-muted)] -z-10" />
+			<div className="absolute bottom-0 left-[75%] w-[25%] h-[200px] bg-[var(--text-muted)] -z-10" /> */}
+
+			<div className="max-w-6xl mx-auto px-8">{children}</div>
+		</div>
 	);
 }
