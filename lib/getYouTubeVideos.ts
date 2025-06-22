@@ -47,8 +47,10 @@ export async function getYouTubeVideos({
 	playlistId: string;
 }): Promise<Videos | null> {
 	try {
+		const API_KEY = process.env.YOUTUBE_API_KEY;
+		
 		const res = await fetch(
-			`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=5`,
+			`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=5&key=${API_KEY}`,
 			{
 				headers: {
 					Authorization: `Bearer ${access_token}`,
@@ -59,7 +61,7 @@ export async function getYouTubeVideos({
 
 		if (!res.ok) {
 			const err = await res.text();
-			console.error("Fetch channel failed:", err);
+			console.error("Fetch videos failed:", err);
 			return null;
 		}
 

@@ -78,29 +78,34 @@ export function LobbyCard({
 			}
 		);
 
-		socket.on(
-			"game-started",
-			({
-				currentRound,
-				impostor,
-				commonTrack,
-			}: {
-				currentRound: number;
-				impostor: { playerId: string; track: string };
-				commonTrack: string;
-			}) => {
-				setLobby({
-					currentRound: currentRound,
-					impostor: impostor,
-					commonTrack: commonTrack,
-				});
-				router.push("/game");
-			}
-		);
+		socket.on("round-initialized", () => {
+			console.log("cos")
+			router.push("/game")	
+		})
+
+		// socket.on(
+		// 	"game-started",
+		// 	({
+		// 		currentRound,
+		// 		impostor,
+		// 		commonTrack,
+		// 	}: {
+		// 		currentRound: number;
+		// 		impostor: { playerId: string; track: string };
+		// 		commonTrack: string;
+		// 	}) => {
+		// 		setLobby({
+		// 			currentRound: currentRound,
+		// 			impostor: impostor,
+		// 			commonTrack: commonTrack,
+		// 		});
+		// 		router.push("/game");
+		// 	}
+		// );
 
 		return () => {
 			socket.off("lobby-updated");
-			socket.off("game-started");
+			socket.off("round-initialized");
 		};
 	}, [lobbyId]);
 
@@ -127,11 +132,14 @@ export function LobbyCard({
 	}, [pathname]);
 
 	const handleStartGame = () => {
-		socket.emit("start-game", {
+		socket.emit("initialize-round", {
 			lobbyId: lobbyId,
-			access_token: session.googleTokens?.access_token,
-			gameOptions: gameOptions,
 		});
+		// socket.emit("start-game", {
+		// 	lobbyId: lobbyId,
+		// 	access_token: session.googleTokens?.access_token,
+		// 	gameOptions: gameOptions,
+		// });
 	};
 
 	return (

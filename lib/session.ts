@@ -10,6 +10,7 @@ export type User = {
 	userId: string;
 	userName: string;
 	points: number;
+	ready?: boolean;
 };
 
 export type SessionPayload = User & {

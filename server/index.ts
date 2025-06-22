@@ -11,6 +11,7 @@ import { getCurrentStateHandler } from "./handlers/getCurrentState";
 import { startGameHandler } from "./handlers/startGame";
 import { startRoundHandler } from "./handlers/startRound";
 import { castVoteHandler } from "./handlers/castVote";
+import { initializeRoundHandler } from "./handlers/initializeRound";
 
 dotenv.config();
 
@@ -49,6 +50,8 @@ io.on("connection", async (socket) => {
 	leaveLobbyHandler(io, socket, redis);
 
 	getCurrentStateHandler(io, socket, redis);
+
+	initializeRoundHandler(io, socket);
 
 	startGameHandler(io, socket, redis);
 

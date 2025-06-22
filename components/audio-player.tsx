@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
+import { Slider } from "./ui/slider";
 
 export function AudioPlayer({
 	videoId,
@@ -89,13 +90,15 @@ export function AudioPlayer({
 
 	return (
 		<div className="flex flex-col items-center space-y-4">
+			<div className="text-6xl">Music is playing</div>
 
 			<div className="w-full max-w-md">
 				<div className="w-full bg-gray-200 rounded-full h-2">
-					<div
+					{/* <div
 						className="bg-blue-600 h-2 rounded-full transition-all duration-1000"
 						style={{ width: `${progressPercentage}%` }}
-					/>
+					/> */}
+					<Slider value={[progressPercentage]} min={0} max={100} disabled={true} />
 				</div>
 			</div>
 

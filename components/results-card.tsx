@@ -48,12 +48,6 @@ export function ResultsCard({
 		);
 
 		socket.on("game-ended", () => {
-			setLobby({
-				gameOptions: {
-					rounds: 3,
-					roundTime: 30,
-				},
-			});
 			router.push("/lobby");
 		});
 
