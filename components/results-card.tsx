@@ -5,6 +5,7 @@ import { getSocket } from "@/lib/socket";
 import { useLobbyStore } from "@/state/lobbyStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import OverlayCard from "./overlay-card";
 
 export function ResultsCard({
 	lobbyId,
@@ -14,38 +15,21 @@ export function ResultsCard({
 	session: SessionPayload;
 }) {
 	const socket = getSocket();
-	const { players, setLobby, gameOptions } = useLobbyStore();
+	const { players, impostor, gameOptions } = useLobbyStore();
 
 	const router = useRouter();
 
 	const handleNextRound = () => {
-		socket.emit("start-round", {
+		socket.emit("initialize-round", {
 			lobbyId: lobbyId,
-			access_token: session.googleTokens?.access_token,
 			gameOptions: gameOptions,
 		});
 	};
 
 	useEffect(() => {
-		socket.on(
-			"round-started",
-			({
-				currentRound,
-				impostor,
-				commonTrack,
-			}: {
-				currentRound: number,
-				impostor: { playerId: string, track: string },
-				commonTrack: string;
-			}) => {
-				setLobby({
-					currentRound: currentRound,
-					impostor: impostor,
-					commonTrack: commonTrack,
-				});
-				router.push("/game");
-			}
-		);
+		socket.on("round-initialized", () => {
+			router.push("/game");
+		});
 
 		socket.on("game-ended", () => {
 			router.push("/lobby");
@@ -57,17 +41,32 @@ export function ResultsCard({
 	}, []);
 
 	return (
-		<div className="w-full h-[1200px] md:h-[600px] p-[24px] bg-secondary-foreground rounded-[32px]">
-			Results
-			{players.map((player) => (
-				<div key={player.userId}>
-					<div>{player.userName}</div>
-					<div>{player.points}</div>
+		<OverlayCard className="relative grid grid-cols-1 md:grid-cols-2 gap-[32px]">
+			<div>
+				<div className="flex justify-center text-5xl md:text-6xl mb-[32px] md:mb-[64px]">
+					Results
 				</div>
-			))}
-			<button className="cursor-pointer p-4" onClick={handleNextRound}>
-				Next round
-			</button>
-		</div>
+				<div className="flex flex-col gap-[32px]">
+					{players.map((player) => (
+						<div key={player.userId} className="flex gap-2 h-10 md:h-16">
+							<div className="h-full aspect-square rounded-full bg-[var(--bg-light)]"></div>
+							<div className="flex justify-between items-center px-6 w-full rounded-full text-lg md:text-2xl bg-[var(--bg-light)] truncate">
+								{player.userName}
+							</div>
+							<div className="flex justify-center items-center aspect-square text-2xl md:text-4xl">
+								{player.points}
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+			<div className="flex flex-col gap-4">
+				Impostor: {impostor.playerId}
+				Song: {impostor.track}
+				<button className="cursor-pointer p-4" onClick={handleNextRound}>
+					Next round
+				</button>
+			</div>
+		</OverlayCard>
 	);
 }

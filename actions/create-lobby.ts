@@ -17,7 +17,7 @@ export const createLobby = async (id: string) => {
 		commonTrack: "",
 		votes: [],
 		gameOptions: { rounds: "", roundTime: "" },
-		currentRound: "",
+		currentRound: 0,
 		phase: "",
 	};
 

@@ -19,9 +19,12 @@ export default async function Lobby() {
 		return <div>no players</div>;
 	}
 
-	const ownerId: string | null = await redis.hget(`lobby:${lobbyId}`, "ownerId");
+	const ownerId: string | null = await redis.hget(
+		`lobby:${lobbyId}`,
+		"ownerId"
+	);
 	if (!ownerId) {
-		return <div>no ownerId</div>
+		return <div>no ownerId</div>;
 	}
 
 	const playlists = session.googleTokens
@@ -31,15 +34,12 @@ export default async function Lobby() {
 		: null;
 
 	return (
-		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-			<div className="w-full text-3xl md:text-6xl mb-4">Lobby: {lobbyId}</div>
-			<LobbyCard
-				lobbyId={lobbyId}
-				ownerId={ownerId}
-				session={session}
-				users={users}
-				playlists={playlists}
-			/>
-		</div>
+		<LobbyCard
+			lobbyId={lobbyId}
+			ownerId={ownerId}
+			session={session}
+			users={users}
+			playlists={playlists}
+		/>
 	);
 }

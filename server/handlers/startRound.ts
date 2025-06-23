@@ -38,7 +38,7 @@ export function startRoundHandler(io: Server, socket: Socket, redis: Redis) {
 					const currentRoundString = await redis.hget(key, "currentRound");
 					const currentRound = currentRoundString
 						? JSON.parse(currentRoundString)
-						: "";
+						: 0;
 
 					const impostorPlayer =
 						players[Math.floor(Math.random() * players.length)];
@@ -79,7 +79,7 @@ export function startRoundHandler(io: Server, socket: Socket, redis: Redis) {
 						setTimeout(async () => {
 							await redis.hset(key, {
 								votes: JSON.stringify([]),
-								currentRound: currentRound,
+								currentRound: currentRound + 1,
 								impostor: JSON.stringify({
 									playerId: impostorPlayer.userId,
 									track: impostorTrack,
@@ -89,7 +89,7 @@ export function startRoundHandler(io: Server, socket: Socket, redis: Redis) {
 							});
 
 							io.to(lobbyId).emit("round-started", {
-								currentRound: currentRound,
+								currentRound: currentRound + 1,
 								impostor: {
 									playerId: impostorPlayer.userId,
 									track: impostorTrack,

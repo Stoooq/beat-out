@@ -51,7 +51,7 @@ io.on("connection", async (socket) => {
 
 	getCurrentStateHandler(io, socket, redis);
 
-	initializeRoundHandler(io, socket);
+	initializeRoundHandler(io, socket, redis);
 
 	startGameHandler(io, socket, redis);
 

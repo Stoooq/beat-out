@@ -79,29 +79,8 @@ export function LobbyCard({
 		);
 
 		socket.on("round-initialized", () => {
-			console.log("cos")
-			router.push("/game")	
-		})
-
-		// socket.on(
-		// 	"game-started",
-		// 	({
-		// 		currentRound,
-		// 		impostor,
-		// 		commonTrack,
-		// 	}: {
-		// 		currentRound: number;
-		// 		impostor: { playerId: string; track: string };
-		// 		commonTrack: string;
-		// 	}) => {
-		// 		setLobby({
-		// 			currentRound: currentRound,
-		// 			impostor: impostor,
-		// 			commonTrack: commonTrack,
-		// 		});
-		// 		router.push("/game");
-		// 	}
-		// );
+			router.push("/game");
+		});
 
 		return () => {
 			socket.off("lobby-updated");
@@ -134,6 +113,7 @@ export function LobbyCard({
 	const handleStartGame = () => {
 		socket.emit("initialize-round", {
 			lobbyId: lobbyId,
+			gameOptions: gameOptions,
 		});
 		// socket.emit("start-game", {
 		// 	lobbyId: lobbyId,
@@ -143,14 +123,17 @@ export function LobbyCard({
 	};
 
 	return (
-		<OverlayCard className="relative grid grid-cols-1 md:grid-cols-2 gap-[32px]">
-			<div className="w-full rounded-[72px]">
-				<ScrollArea className="h-[472px] w-full">
+		<OverlayCard className="flex flex-col md:flex-row justify-between gap-[32px]">
+			<div>
+				<div className="flex justify-center text-sm xs:text-3xl md:text-6xl mb-[32px] md:mb-[64px]">
+					Lobby: {lobbyId}
+				</div>
+				<ScrollArea className="h-1/2 w-full">
 					<div className="flex flex-col gap-[32px]">
 						{players.map((player) => (
-							<div key={player.userId} className="flex gap-2">
-								<div className="h-16 min-w-16 rounded-full bg-[var(--bg-light)]"></div>
-								<div className="flex justify-between items-center h-16 w-full px-6 rounded-full text-2xl bg-[var(--bg-light)]">
+							<div key={player.userId} className="flex gap-2 h-10 md:h-16">
+								<div className="h-full aspect-square rounded-full bg-[var(--bg-light)]"></div>
+								<div className="flex justify-between items-center px-6 w-full rounded-full text-lg md:text-2xl bg-[var(--bg-light)] truncate">
 									{player.userName}
 									{player.userId === ownerId && (
 										<CrownIcon className="w-8 h-8 fill-current text-white" />
@@ -171,7 +154,8 @@ export function LobbyCard({
 					</div>
 				</ScrollArea>
 			</div>
-			<div className="w-full rounded-[72px]">
+
+			<div>
 				<div className="flex flex-col gap-[32px]">
 					<div className="flex flex-col justify-between items-center h-16">
 						<div className="flex items-center gap-6">
@@ -231,7 +215,7 @@ export function LobbyCard({
 								<div>Select your playlist</div>
 							)}
 						</DialogTrigger>
-						<DialogContent>
+						<DialogContent className="h-[calc(100vh-2rem)] md:h-[600px]">
 							<DialogTitle>Your latest playlists</DialogTitle>
 							{playlists &&
 								playlists.items.map((playlist) => (
@@ -256,10 +240,16 @@ export function LobbyCard({
 						</DialogContent>
 					</Dialog>
 				</div>
+
+				<div className="flex items-end">
+					<button
+						className="p-8 rounded-full w-full cursor-pointer bg-[var(--bg)]"
+						onClick={handleStartGame}
+					>
+						Start game
+					</button>
+				</div>
 			</div>
-			<button className="p-4 cursor-pointer" onClick={handleStartGame}>
-				Start game
-			</button>
 		</OverlayCard>
 	);
 }

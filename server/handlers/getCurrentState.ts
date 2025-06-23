@@ -10,7 +10,7 @@ export function getCurrentStateHandler(io: Server, socket: Socket, redis: Redis)
 
 		io.to(lobbyId).emit("state-updated", {
 			phase,
-			currentRound: currentRound ? JSON.parse(currentRound) : null,
+			currentRound: currentRound ? JSON.parse(currentRound) : 0,
 		});
 	});
 }

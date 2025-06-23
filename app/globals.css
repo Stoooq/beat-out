@@ -10,6 +10,8 @@
 	--text: oklch(0.9208 0.0149 80.71);
 	--text-muted: oklch(0.7208 0.0149 80.71);
 	--my-primary: oklch(0.296 0.190457 272.1405);
+
+	--breakpoint-xs: 24rem;
 	
 	--color-background: var(--color-background);
 	--color-foreground: var(--color-foreground);

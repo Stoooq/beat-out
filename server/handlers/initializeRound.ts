@@ -1,14 +1,31 @@
+import { Redis } from "ioredis";
 import type { Server, Socket } from "socket.io";
 
 export function initializeRoundHandler(
 	io: Server,
 	socket: Socket,
+	redis: Redis
 ) {
-	socket.on("initialize-round", async (payload: { lobbyId: string }) => {
-		const { lobbyId } = payload;
+	socket.on(
+		"initialize-round",
+		async (payload: {
+			lobbyId: string;
+			gameOptions: { rounds: number; roundTime: number; playlistId: string };
+		}) => {
+			const { lobbyId, gameOptions } = payload;
+			const key = `lobby:${lobbyId}`;
 
-		//todo zrobić sprawdzenie ilości rund czy nie jest już koniec
+			const currentRoundString = await redis.hget(key, "currentRound");
+			const currentRound = currentRoundString
+				? JSON.parse(currentRoundString)
+				: "";
 
-		io.to(lobbyId).emit("round-initialized");
-	});
+			if (currentRound >= gameOptions.rounds) {
+				io.to(lobbyId).emit("game-ended");
+				return;
+			}
+
+			io.to(lobbyId).emit("round-initialized");
+		}
+	);
 }

@@ -18,9 +18,5 @@ export default async function Vote() {
 		return <div>no players</div>;
 	}
 
-	return (
-		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-			<VoteCard session={session} users={users} />
-		</div>
-	);
+	return <VoteCard session={session} users={users} />;
 }

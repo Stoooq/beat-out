@@ -18,10 +18,5 @@ export default async function Results() {
 		return <div>no players</div>;
 	}
 
-	return (
-		<div className="min-h-screen flex flex-col justify-center items-center font-(family-name:--font-climate-crisis)">
-			Results
-			<ResultsCard lobbyId={lobbyId} session={session} />
-		</div>
-	);
+	return <ResultsCard lobbyId={lobbyId} session={session} />;
 }

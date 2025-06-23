@@ -11,15 +11,10 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<div className="min-h-screen relative overflow-x-hidden bg-[url('/background-red.svg')] bg-no-repeat bg-cover bg-blend-overlay">
-			{/* <div className="absolute bottom-1/2 left-1/2 translate-x-[50px] w-[350px] h-[350px] rounded-full bg-[var(--bg-color1)] -z-10" />
-			<div className="absolute bottom-1/2 left-1/2 w-[350px] h-[350px] rounded-full bg-[var(--bg-color2)] -z-10" />
-			<div className="absolute bottom-1/2 left-1/2 w-[350px] h-[350px] rounded-full bg-[var(--bg-color3)] -z-10" /> */}
-			{/* <div className="absolute bottom-0 left-[25%] w-[25%] h-[600px] bg-[var(--text-muted)] -z-10" />
-			<div className="absolute bottom-0 left-[50%] w-[25%] h-[400px] bg-[var(--text-muted)] -z-10" />
-			<div className="absolute bottom-0 left-[75%] w-[25%] h-[200px] bg-[var(--text-muted)] -z-10" /> */}
-
-			<div className="max-w-6xl mx-auto px-8">{children}</div>
+		<div className="min-h-screen flex flex-col justify-center items-center overflow-x-hidden bg-[url('/background-red.svg')] bg-no-repeat bg-cover bg-blend-overlay p-4">
+			<div className="max-w-5xl w-full h-full md:h-[600px] flex flex-col justify-center items-center mx-auto font-(family-name:--font-climate-crisis)">
+				{children}
+			</div>
 		</div>
 	);
 }

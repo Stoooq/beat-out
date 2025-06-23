@@ -22,7 +22,7 @@ export function GameCard({
 	const router = useRouter();
 	const { impostor, commonTrack, gameOptions, setLobby } = useLobbyStore();
 
-	const startCountdown = useCountdown(10, { autoStart: false });
+	const startCountdown = useCountdown(5, { autoStart: false });
 	const gameCountdown = useCountdown(gameOptions.roundTime, {
 		autoStart: false,
 	});
